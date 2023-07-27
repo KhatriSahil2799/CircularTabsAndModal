@@ -11,7 +11,7 @@ export default function App() {
         {/* <Text>Open up App.js to start working on your app!</Text> */}
         <StatusBar style="auto" />
         {/* <CircularTabs />  */}
-        <SwipeableModal type="LEFT" snapPoint={200} />
+        <SwipeableModal type="RIGHT" snapPoint={200} />
       </View>
     </GestureHandlerRootView>
   );

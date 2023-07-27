@@ -66,11 +66,27 @@ const SwipeableModal = ({ type, snapPoint }) => {
   ) => {
     "worklet";
 
-    console.log("🚀 ~ file: SwipeableModal.tsx:58 ~ SwipeableModal ~ e:", e);
-    if (type === LEFT || type === RIGHT) {
+    console.log(
+      "🚀 ~ file: SwipeableModal.tsx:73 ~ SwipeableModal ~ e.translationX:",
+      e.translationX
+    );
+    if (type === LEFT) {
       //   modalPosition.value = modalPanOffset.value - e.translationX;
       modalPosition.value = interpolate(
         modalPanOffset.value - e.translationX,
+        [0, width - snapPoint, width],
+        [width - snapPoint, width - snapPoint, width]
+      );
+    }
+
+    console.log(
+      "🚀 ~ file: SwipeableModal.tsx:86 ~ SwipeableModal ~ modalPanOffset.value + e.translationX:",
+      modalPanOffset.value + e.translationX
+    );
+    if (type === RIGHT) {
+      //   modalPosition.value = modalPanOffset.value + e.translationX;
+      modalPosition.value = interpolate(
+        modalPanOffset.value + e.translationX,
         [0, width - snapPoint, width],
         [width - snapPoint, width - snapPoint, width]
       );
@@ -81,16 +97,11 @@ const SwipeableModal = ({ type, snapPoint }) => {
     (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
 
-      if (type === LEFT) {
+      if (type === LEFT || type === RIGHT) {
         console.log(
           "🚀 ~ file: SwipeableModal.tsx:77 ~ SwipeableModal ~ e.translationX:",
           e.translationX
         );
-        // if (modalPosition.value <= width - snapPoint) {
-        //   modalPosition.value = withTiming(width - snapPoint, {
-        //     duration: 100,
-        //   });
-        // } else
         if (modalPosition.value > width - snapPoint) {
           modalPosition.value = withTiming(width, {
             duration: 100,
@@ -133,13 +144,11 @@ const SwipeableModal = ({ type, snapPoint }) => {
   };
 
   const modalStyle = useAnimatedStyle(() => ({
-    // transform: [{ translateX: modalPosition.value }],
+    // for left modal
     right: modalPosition.value,
-    // right: interpolate(
-    //   modalPosition.value,
-    //   [0, width - snapPoint, width],
-    //   [width - snapPoint, width - snapPoint, width]
-    // ),
+
+    // for right modal
+    left: modalPosition.value,
   }));
 
   return (
