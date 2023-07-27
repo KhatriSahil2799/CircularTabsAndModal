@@ -59,6 +59,8 @@ const SwipeableModal = ({ type, snapPoint }) => {
   const modalPosition = useSharedValue(width);
   const modalPanOffset = useSharedValue(0);
 
+  const onLeftUpdate = () => {};
+
   const onUpdateGesture = (
     e: GestureUpdateEvent<PanGestureHandlerEventPayload>
   ) => {
@@ -66,7 +68,12 @@ const SwipeableModal = ({ type, snapPoint }) => {
 
     console.log("🚀 ~ file: SwipeableModal.tsx:58 ~ SwipeableModal ~ e:", e);
     if (type === LEFT || type === RIGHT) {
-      modalPosition.value = modalPanOffset.value - e.translationX;
+      //   modalPosition.value = modalPanOffset.value - e.translationX;
+      modalPosition.value = interpolate(
+        modalPanOffset.value - e.translationX,
+        [0, width - snapPoint, width],
+        [width - snapPoint, width - snapPoint, width]
+      );
     }
   };
 
@@ -83,11 +90,12 @@ const SwipeableModal = ({ type, snapPoint }) => {
         //   modalPosition.value = withTiming(width - snapPoint, {
         //     duration: 100,
         //   });
-        // } else if (modalPosition.value > width - snapPoint) {
-        //   modalPosition.value = withTiming(width, {
-        //     duration: 100,
-        //   });
-        // }
+        // } else
+        if (modalPosition.value > width - snapPoint) {
+          modalPosition.value = withTiming(width, {
+            duration: 100,
+          });
+        }
         console.log(
           "🚀 ~ file: SwipeableModal.tsx:85 ~ SwipeableModal ~  width - snapPoint:",
           width - snapPoint
@@ -126,12 +134,12 @@ const SwipeableModal = ({ type, snapPoint }) => {
 
   const modalStyle = useAnimatedStyle(() => ({
     // transform: [{ translateX: modalPosition.value }],
-    // right: modalPosition.value,
-    right: interpolate(
-      modalPosition.value,
-      [0, width - snapPoint, width],
-      [width - snapPoint, width - snapPoint, width]
-    ),
+    right: modalPosition.value,
+    // right: interpolate(
+    //   modalPosition.value,
+    //   [0, width - snapPoint, width],
+    //   [width - snapPoint, width - snapPoint, width]
+    // ),
   }));
 
   return (
