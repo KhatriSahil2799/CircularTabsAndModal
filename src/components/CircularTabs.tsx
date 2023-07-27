@@ -1,4 +1,10 @@
-import React, { useMemo, useState, useRef, useCallback } from "react";
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  ReactNode,
+} from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -19,37 +25,10 @@ const { width } = Dimensions.get("screen");
 const SWIPE_LEFT = "SWIPE_LEFT";
 const SWIPE_RIGHT = "SWIPE_RIGHT";
 
-const useGenerateRandomColor = () =>
-  `#${Math.random().toString(16).substr(-6)}`;
-
-const Card = ({ text }) => (
-  <View
-    style={{
-      width,
-      height: 500,
-      backgroundColor: useGenerateRandomColor(),
-    }}
-  >
-    <Text>{text}</Text>
-  </View>
-);
-
-const data = [
-  "card A",
-  "card B",
-  "card C",
-  "card D",
-  "card E",
-  "card F",
-  "card G",
-  "card H",
-  "card I",
-  "card J",
-];
-
-interface CircularTabsInterface {
-  data: Array<any>;
+interface CircularTabsInterface<T> {
+  data: Array<T>;
   animation: boolean;
+  renderer: (item: T, index: number) => ReactNode;
 }
 
 function isIndexInArray(index: number, arr: Array<any>) {
@@ -57,10 +36,11 @@ function isIndexInArray(index: number, arr: Array<any>) {
   return Number.isInteger(index) && index >= 0 && index < arr.length;
 }
 
-const CircularTabs = ({
-  children,
+const CircularTabs = <T,>({
+  data,
   animation = true,
-}: CircularTabsInterface) => {
+  renderer,
+}: CircularTabsInterface<T>) => {
   const cardPosition = useRef({
     previous: "CardA",
     current: "CardB",
@@ -72,22 +52,14 @@ const CircularTabs = ({
     cardB: 0,
     cardC: 1,
   });
+
   console.log("🚀 ~ file: CircularTabs.tsx:75 ~ cardIndex:", cardIndex);
 
-  const CardA = useMemo(
-    () => <Card text={`${data[cardIndex.cardA]} cardA`} key="cardA" />,
-    [cardIndex.cardA]
-  );
+  const CardA = renderer(data[cardIndex?.cardA], cardIndex?.cardA);
 
-  const CardB = useMemo(
-    () => <Card text={`${data[cardIndex.cardB]} cardB`} key="cardB" />,
-    [cardIndex.cardB]
-  );
+  const CardB = renderer(data[cardIndex?.cardB], cardIndex?.cardB);
 
-  const CardC = useMemo(
-    () => <Card text={`${data[cardIndex.cardC]} cardC`} key="cardC" />,
-    [cardIndex.cardC]
-  );
+  const CardC = renderer(data[cardIndex?.cardC], cardIndex?.cardC);
 
   const {
     cardAPosition,
@@ -183,11 +155,11 @@ const CircularTabs = ({
       cardCPosition.value = cardCPanOffset.value + e.translationX;
     },
     [
-      cardAPanOffset.value,
+      cardAPanOffset,
       cardAPosition,
-      cardBPanOffset.value,
+      cardBPanOffset,
       cardBPosition,
-      cardCPanOffset.value,
+      cardCPanOffset,
       cardCPosition,
     ]
   );
@@ -342,6 +314,6 @@ export default CircularTabs;
 const styles = StyleSheet.create({
   absolute: {
     position: "absolute",
-    bottom: 100,
+    // bottom: 100,
   },
 });
