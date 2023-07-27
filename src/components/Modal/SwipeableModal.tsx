@@ -65,6 +65,11 @@ const SwipeableModal = (
   );
   const [isBackdropVisible, setIsBackdropVisible] = useState(false);
 
+  /**
+   * This function is a callback function called onUpdateGesture,
+   * used to update the position of a modal based on a gesture event,
+   * on the basis of modal direction and limit the position maximum to snapPoint
+   */
   const onUpdateGesture = useCallback(
     (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
@@ -103,6 +108,12 @@ const SwipeableModal = (
     },
     [direction, modalPanOffset, modalPosition, snapPoint]
   );
+
+  /**
+   * This onEndGesture callback function handles the actions to be taken when the gesture ends.
+   * If the modal position is beyond the threshold (width - snapPoint or height - snapPoint),
+   * close the modal by animating it to the side edge of the screen (width or height).
+   **/
 
   const onEndGesture = useCallback(() => {
     "worklet";
