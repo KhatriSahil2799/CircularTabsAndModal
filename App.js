@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import {
   GestureDetector,
@@ -50,16 +50,7 @@ const data = [
   "card J",
 ];
 
-let pivot = 0;
-
-const pivotIncrement = () => {
-  pivot = pivot + 1;
-  console.log("🚀 ~ file: App.js:63 ~ pivotIncrement ~ pivot:", pivot);
-};
-
 export default function App() {
-  const [pivot, setPivot] = useState(0);
-
   const [cardPosition, setCardPosition] = useState({
     previous: "CardA",
     current: "CardB",
@@ -115,7 +106,6 @@ export default function App() {
     if (swipeDirection === SWIPE_LEFT) {
       if (cardPosition.previous === "CardA") {
         setCardIndex((prev) => {
-          // @todo
           return {
             ...prev,
             cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
@@ -123,7 +113,6 @@ export default function App() {
         });
       } else if (cardPosition.previous === "CardB") {
         setCardIndex((prev) => {
-          // @todo
           return {
             ...prev,
             cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
@@ -131,7 +120,6 @@ export default function App() {
         });
       } else if (cardPosition.previous === "CardC") {
         setCardIndex((prev) => {
-          // @todo
           return {
             ...prev,
             cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
@@ -150,7 +138,6 @@ export default function App() {
     if (swipeDirection === SWIPE_RIGHT) {
       if (cardPosition.next === "CardA") {
         setCardIndex((prev) => {
-          // @todo
           return {
             ...prev,
             cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
@@ -158,7 +145,6 @@ export default function App() {
         });
       } else if (cardPosition.next === "CardB") {
         setCardIndex((prev) => {
-          // @todo
           return {
             ...prev,
             cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
@@ -166,7 +152,6 @@ export default function App() {
         });
       } else if (cardPosition.next === "CardC") {
         setCardIndex((prev) => {
-          // @todo
           return {
             ...prev,
             cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
@@ -296,40 +281,20 @@ export default function App() {
     });
 
   const cardAStyle = useAnimatedStyle(() => {
-    // console.log(
-    //   "🚀 ~ file: App.js:119 ~ cardAStyle ~ cardAPosition.value :",
-    //   cardAPosition.value
-    // );
     return {
       transform: [{ translateX: cardAPosition.value }],
     };
   });
   const cardBStyle = useAnimatedStyle(() => {
-    // console.log(
-    //   "🚀 ~ file: App.js:133 ~ cardBStyle ~ cardBPosition.value :",
-    //   cardBPosition.value
-    // );
     return {
       transform: [{ translateX: cardBPosition.value }],
     };
   });
   const cardCStyle = useAnimatedStyle(() => {
-    // console.log(
-    //   "🚀 ~ file: App.js:155 ~ cardCStyle ~ cardCPosition.value :",
-    //   cardCPosition.value
-    // );
     return {
       transform: [{ translateX: cardCPosition.value }],
     };
   });
-
-  // useDerivedValue(() => {
-  //   console.log(
-  //     "🚀 ~ file: App.js:208 ~ useDerivedValue ~ cardPivot.value:",
-  //     cardPivot.value
-  //   );
-  //   runOnJS(changeCards)(cardPivot.value);
-  // }, [cardPivot.value]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -371,26 +336,14 @@ const styles = StyleSheet.create({
   },
   absoluteB: {
     position: "absolute",
-    // top: 0,
-    // left: 0,
-    // right: 100,
     bottom: 100,
-    // zIndex: 10,
   },
   absoluteA: {
     position: "absolute",
-    // top: 0,
-    // left: 0,
-    // right: width - 20,
     bottom: 100,
-    // zIndex: 10,
   },
   absoluteC: {
     position: "absolute",
-    // top: 0,
-    // left: width - 20,
-    // right: 100,
     bottom: 100,
-    // zIndex: 10,
   },
 });
