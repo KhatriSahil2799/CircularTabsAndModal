@@ -4,6 +4,8 @@ import React, {
   ReactNode,
   useCallback,
   useMemo,
+  forwardRef,
+  useImperativeHandle,
 } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import {
@@ -39,11 +41,10 @@ const SPRING_CONFIG = {
   stiffness: 500,
 };
 
-const CircularTabs = <T,>({
-  data,
-  animation = true,
-  renderer,
-}: CircularTabsInterface<T>) => {
+const CircularTabs = <T,>(
+  { data, animation = true, renderer }: CircularTabsInterface<T>,
+  ref
+) => {
   const cardPosition = useRef({
     previous: "cardA",
     current: "cardB",
@@ -65,6 +66,66 @@ const CircularTabs = <T,>({
     cardCPanOffset,
   } = useCardsPositionAndOffset({ componentWidth: width });
 
+  const getNextValidArrayIndex = (
+    currentIndex: number,
+    dataSetSize: number
+  ) => {
+    let newIndex = currentIndex + 1;
+    if (newIndex >= dataSetSize) {
+      newIndex = 0;
+    }
+    return newIndex;
+  };
+
+  const getPreviousValidArrayIndex = (
+    currentIndex: number,
+    dataSetSize: number
+  ) => {
+    let newIndex = currentIndex - 1;
+    if (newIndex < 0) {
+      newIndex = dataSetSize - 1;
+    }
+    return newIndex;
+  };
+
+  const scrollToIndex = useCallback(
+    (index: number) => {
+      if (!(index >= 0 && index < data?.length)) {
+        throw new Error(`${index} index doesn't exist`);
+      }
+
+      setCardIndex((prev) => {
+        // just for typescript
+        const newCardsIndex = { ...prev };
+
+        newCardsIndex[cardPosition.current.current] = index;
+        newCardsIndex[cardPosition.current.previous] =
+          getPreviousValidArrayIndex(index, data?.length);
+        newCardsIndex[cardPosition.current.next] = getNextValidArrayIndex(
+          index,
+          data?.length
+        );
+
+        return newCardsIndex;
+      });
+    },
+    [
+      data,
+      cardPosition,
+      setCardIndex,
+      getPreviousValidArrayIndex,
+      getNextValidArrayIndex,
+    ]
+  );
+
+  useImperativeHandle(
+    ref,
+    () => {
+      return { scrollToIndex };
+    },
+    [scrollToIndex]
+  );
+
   const getValidArrayIndex = useCallback(
     (
       swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT,
@@ -74,15 +135,17 @@ const CircularTabs = <T,>({
       let newIndex: number;
 
       if (swipeDirection === SWIPE_LEFT) {
-        newIndex = currentIndex + 1;
-        if (newIndex >= totalCards) {
-          newIndex = 0;
-        }
+        newIndex = getNextValidArrayIndex(currentIndex, totalCards);
+        // newIndex = currentIndex + 1;
+        // if (newIndex >= totalCards) {
+        //   newIndex = 0;
+        // }
       } else if (swipeDirection === SWIPE_RIGHT) {
-        newIndex = currentIndex - 1;
-        if (newIndex < 0) {
-          newIndex = totalCards - 1;
-        }
+        newIndex = getPreviousValidArrayIndex(currentIndex, totalCards);
+        // newIndex = currentIndex - 1;
+        // if (newIndex < 0) {
+        //   newIndex = totalCards - 1;
+        // }
       }
 
       return newIndex;
@@ -302,7 +365,7 @@ const CircularTabs = <T,>({
   );
 };
 
-export default CircularTabs;
+export default forwardRef(CircularTabs);
 
 const styles = StyleSheet.create({
   absolute: {
