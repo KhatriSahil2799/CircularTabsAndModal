@@ -1,29 +1,18 @@
-import { Dimensions, FlatList, StyleSheet, Text, View } from "react-native";
-import React, { memo, useMemo, useState } from "react";
-import CircularTabs from "./CircularTabs2";
-import InfiniteLoopingFlatList from "./InfiniteLoopingFlatList";
-import { Picker } from "@react-native-picker/picker";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
+import React, { useMemo } from "react";
+import CircularTabs from "./CircularTabs";
 
 const data = [
-  {
-    title: "Screen 1",
-    // bgColor: "red"
-  },
-  {
-    title: "Screen 2",
-    // bgColor: "pink"
-  },
-  {
-    title: "Screen 3",
-    // bgColor: "gray"
-  },
+  { title: "Screen 0" },
+  { title: "Screen 1" },
+  { title: "Screen 2" },
+  { title: "Screen 3" },
   { title: "Screen 4" },
   { title: "Screen 5" },
   { title: "Screen 6" },
   { title: "Screen 7" },
   { title: "Screen 8" },
   { title: "Screen 9" },
-  { title: "Screen 10" },
 ];
 
 const useGenerateRandomColor = () =>
@@ -32,10 +21,6 @@ const useGenerateRandomColor = () =>
 const { width } = Dimensions.get("window");
 
 const Card = ({ text, bgColor }) => {
-  console.log("🚀 ~ file: CircularTabsDemo.tsx:31 ~ { text, bgColor }:", {
-    text,
-    bgColor,
-  });
   return (
     <View
       style={{
@@ -45,9 +30,11 @@ const Card = ({ text, bgColor }) => {
         height: 500,
         flex: 1,
         backgroundColor: bgColor,
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
-      <Text>{text}</Text>
+      <Text style={{ fontSize: 25, color: "white" }}>{text}</Text>
     </View>
   );
 };
@@ -58,11 +45,6 @@ const CircularTabsDemo = () => {
       return { ...item, bgColor: useGenerateRandomColor() };
     });
   }, [data]);
-  console.log(
-    "🚀 ~ file: CircularTabsDemo.tsx:40 ~ memoizedData ~ memoizedData:",
-    memoizedData
-  );
-  const [selectedLanguage, setSelectedLanguage] = useState();
 
   return (
     <>
@@ -74,11 +56,6 @@ const CircularTabsDemo = () => {
         animation={true}
         //   itemDimention={{}}
         renderer={(item, index) => {
-          console.log(
-            "🚀 ~ file: CircularTabsDemo.tsx:69 ~ Renderer={memo ~ item, index:",
-            item,
-            index
-          );
           return (
             <Card
               text={item?.title}
