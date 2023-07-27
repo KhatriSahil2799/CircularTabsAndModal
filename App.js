@@ -1,7 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import {
+  GestureDetector,
+  Gesture,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -328,31 +332,33 @@ export default function App() {
   // }, [cardPivot.value]);
 
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-      <GestureDetector gesture={panGesture}>
-        <View
-          style={{
-            flex: 1,
-            width: "100%",
-            backgroundColor: "yellow",
-          }}
-        >
-          <Animated.View style={[styles.absoluteA, cardAStyle]}>
-            {CardA}
-          </Animated.View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Text>Open up App.js to start working on your app!</Text>
+        <StatusBar style="auto" />
+        <GestureDetector gesture={panGesture}>
+          <View
+            style={{
+              flex: 1,
+              width: "100%",
+              backgroundColor: "yellow",
+            }}
+          >
+            <Animated.View style={[styles.absoluteA, cardAStyle]}>
+              {CardA}
+            </Animated.View>
 
-          <Animated.View style={[styles.absoluteC, cardCStyle]}>
-            {CardC}
-          </Animated.View>
+            <Animated.View style={[styles.absoluteC, cardCStyle]}>
+              {CardC}
+            </Animated.View>
 
-          <Animated.View style={[styles.absoluteB, cardBStyle]}>
-            {CardB}
-          </Animated.View>
-        </View>
-      </GestureDetector>
-    </View>
+            <Animated.View style={[styles.absoluteB, cardBStyle]}>
+              {CardB}
+            </Animated.View>
+          </View>
+        </GestureDetector>
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
