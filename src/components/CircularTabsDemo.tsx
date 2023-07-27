@@ -70,7 +70,7 @@ const CircularTabsDemo = () => {
         <CircularTabs
           ref={circularTabRef}
           data={data}
-          animation={true}
+          animate={true}
           onAddTab={(index) => {
             setTabButtons((prev) => [...prev, index]);
           }}

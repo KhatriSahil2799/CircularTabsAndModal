@@ -29,7 +29,7 @@ const SWIPE_RIGHT = "SWIPE_RIGHT";
 
 interface CircularTabsInterface<T> {
   data: Array<T>;
-  animation: boolean;
+  animate?: boolean;
   renderer: (item: T, index: number) => ReactNode;
   onAddTab?: (index: number) => void;
   onRemoveTab?: (index: number, success: boolean) => void;
@@ -86,7 +86,7 @@ const getPreviousValidArrayIndex = (
 const CircularTabs = <T,>(
   {
     data,
-    animation = true,
+    animate = true,
     renderer,
     onAddTab,
     onRemoveTab,
@@ -309,30 +309,42 @@ const CircularTabs = <T,>(
           if (cardBPanOffset.value <= -width) {
             cardBPanOffset.value = width;
           } else {
-            cardBPosition.value = withSpring(
-              cardBPanOffset.value - width,
-              SPRING_CONFIG
-            );
+            if (animate) {
+              cardBPosition.value = withSpring(
+                cardBPanOffset.value - width,
+                SPRING_CONFIG
+              );
+            } else {
+              cardBPosition.value = cardBPanOffset.value - width;
+            }
             cardBPanOffset.value -= width;
           }
 
           if (cardCPanOffset.value <= -width) {
             cardCPanOffset.value = width;
           } else {
-            cardCPosition.value = withSpring(
-              cardCPanOffset.value - width,
-              SPRING_CONFIG
-            );
+            if (animate) {
+              cardCPosition.value = withSpring(
+                cardCPanOffset.value - width,
+                SPRING_CONFIG
+              );
+            } else {
+              cardCPosition.value = cardCPanOffset.value - width;
+            }
             cardCPanOffset.value -= width;
           }
 
           if (cardAPanOffset.value <= -width) {
             cardAPanOffset.value = width;
           } else {
-            cardAPosition.value = withSpring(
-              cardAPanOffset.value - width,
-              SPRING_CONFIG
-            );
+            if (animate) {
+              cardAPosition.value = withSpring(
+                cardAPanOffset.value - width,
+                SPRING_CONFIG
+              );
+            } else {
+              cardAPosition.value = cardAPanOffset.value - width;
+            }
             cardAPanOffset.value -= width;
           }
         }
@@ -340,39 +352,63 @@ const CircularTabs = <T,>(
           if (cardBPanOffset.value >= width) {
             cardBPanOffset.value = -width;
           } else {
-            cardBPosition.value = withSpring(
-              cardBPanOffset.value + width,
-              SPRING_CONFIG
-            );
+            if (animate) {
+              cardBPosition.value = withSpring(
+                cardBPanOffset.value + width,
+                SPRING_CONFIG
+              );
+            } else {
+              cardBPosition.value = cardBPanOffset.value + width;
+            }
             cardBPanOffset.value += width;
           }
 
           if (cardAPanOffset.value >= width) {
             cardAPanOffset.value = -width;
           } else {
-            cardAPosition.value = withSpring(
-              cardAPanOffset.value + width,
-              SPRING_CONFIG
-            );
+            if (animate) {
+              cardAPosition.value = withSpring(
+                cardAPanOffset.value + width,
+                SPRING_CONFIG
+              );
+            } else {
+              cardAPosition.value = cardAPanOffset.value + width;
+            }
             cardAPanOffset.value += width;
           }
 
           if (cardCPanOffset.value >= width) {
             cardCPanOffset.value = -width;
           } else {
-            cardCPosition.value = withSpring(
-              cardCPanOffset.value + width,
-              SPRING_CONFIG
-            );
+            if (animate) {
+              cardCPosition.value = withSpring(
+                cardCPanOffset.value + width,
+                SPRING_CONFIG
+              );
+            } else {
+              cardCPosition.value = cardCPanOffset.value + width;
+            }
             cardCPanOffset.value += width;
           }
         }
       } else {
-        cardBPosition.value = withSpring(cardBPanOffset.value, SPRING_CONFIG);
+        if (animate) {
+          cardBPosition.value = withSpring(cardBPanOffset.value, SPRING_CONFIG);
+        } else {
+          cardBPosition.value = cardBPanOffset.value;
+        }
 
-        cardCPosition.value = withSpring(cardCPanOffset.value, SPRING_CONFIG);
+        if (animate) {
+          cardCPosition.value = withSpring(cardCPanOffset.value, SPRING_CONFIG);
+        } else {
+          cardCPosition.value = cardCPanOffset.value;
+        }
 
-        cardAPosition.value = withSpring(cardAPanOffset.value, SPRING_CONFIG);
+        if (animate) {
+          cardAPosition.value = withSpring(cardAPanOffset.value, SPRING_CONFIG);
+        } else {
+          cardAPosition.value = cardAPanOffset.value;
+        }
       }
     },
     [
