@@ -56,7 +56,8 @@ const getModalInitialPosition = (
 };
 
 const SwipeableModal = ({ type, snapPoint }) => {
-  const modalPosition = useSharedValue(width);
+  // const modalPosition = useSharedValue(width);
+  const modalPosition = useSharedValue(height);
   const modalPanOffset = useSharedValue(0);
 
   const onLeftUpdate = () => {};
@@ -91,30 +92,41 @@ const SwipeableModal = ({ type, snapPoint }) => {
         [width - snapPoint, width - snapPoint, width]
       );
     }
+
+    if (type === BOTTOM) {
+      //   modalPosition.value = modalPanOffset.value + e.translationY;
+      modalPosition.value = interpolate(
+        modalPanOffset.value + e.translationY,
+        [0, height - snapPoint, height],
+        [height - snapPoint, height - snapPoint, height]
+      );
+    }
   };
 
   const onEndGesture = useCallback(
     (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
 
+      /**
+       * Closes the modal if it goes below threshold
+       */
       if (type === LEFT || type === RIGHT) {
-        console.log(
-          "🚀 ~ file: SwipeableModal.tsx:77 ~ SwipeableModal ~ e.translationX:",
-          e.translationX
-        );
         if (modalPosition.value > width - snapPoint) {
           modalPosition.value = withTiming(width, {
             duration: 100,
           });
         }
-        console.log(
-          "🚀 ~ file: SwipeableModal.tsx:85 ~ SwipeableModal ~  width - snapPoint:",
-          width - snapPoint
-        );
-        console.log(
-          "🚀 ~ file: SwipeableModal.tsx:85 ~ SwipeableModal ~ modalPosition.value :",
-          modalPosition.value
-        );
+      }
+
+      /**
+       * Closes the modal if it goes below threshold
+       */
+      if (type === BOTTOM || type === TOP) {
+        if (modalPosition.value > height - snapPoint) {
+          modalPosition.value = withTiming(height, {
+            duration: 100,
+          });
+        }
       }
     },
     [modalPosition, modalPanOffset]
@@ -139,16 +151,19 @@ const SwipeableModal = ({ type, snapPoint }) => {
   const show = () => {
     console.log("called");
 
-    modalPosition.value = withTiming(width - snapPoint, { duration: 300 });
+    modalPosition.value = withTiming(height - snapPoint, { duration: 300 });
     modalPanOffset.value = snapPoint;
   };
 
   const modalStyle = useAnimatedStyle(() => ({
-    // for left modal
-    right: modalPosition.value,
+    // // for left modal
+    // right: modalPosition.value,
 
-    // for right modal
-    left: modalPosition.value,
+    // // for right modal
+    // left: modalPosition.value,
+
+    // for bottom modal
+    top: modalPosition.value,
   }));
 
   return (
@@ -180,8 +195,8 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     position: "absolute",
-    top: 100,
-    // left: 0,
+    // top: 100,
+    left: 0,
     backgroundColor: "yellow",
     zIndex: 1,
   },
