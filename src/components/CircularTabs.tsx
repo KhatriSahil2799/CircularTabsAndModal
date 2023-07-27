@@ -49,7 +49,16 @@ const SPRING_CONFIG = {
   stiffness: 500,
 };
 
-const getNextValidArrayIndex = (currentIndex: number, dataSetSize: number) => {
+/**
+ *
+ * @param currentIndex
+ * @param dataSetSize
+ * @returns newValidIndex as per the circular List
+ */
+const getNextValidArrayIndex = (
+  currentIndex: number,
+  dataSetSize: number
+): number => {
   let newIndex = currentIndex + 1;
   if (newIndex >= dataSetSize) {
     newIndex = 0;
@@ -57,10 +66,16 @@ const getNextValidArrayIndex = (currentIndex: number, dataSetSize: number) => {
   return newIndex;
 };
 
+/**
+ *
+ * @param currentIndex
+ * @param dataSetSize
+ * @returns newValidIndex as per the circular List
+ */
 const getPreviousValidArrayIndex = (
   currentIndex: number,
   dataSetSize: number
-) => {
+): number => {
   let newIndex = currentIndex - 1;
   if (newIndex < 0) {
     newIndex = dataSetSize - 1;
@@ -130,6 +145,10 @@ const CircularTabs = <T,>(
     ]
   );
 
+  /**
+   * @param item
+   * adds new item to the end of the dataSet
+   */
   const addTab = useCallback(
     (item: T) => {
       const newLastItemIndex = data?.push(item);
@@ -143,6 +162,10 @@ const CircularTabs = <T,>(
     [data, scrollToIndex, onAddTab]
   );
 
+  /**
+   * @param index
+   * Removes an item from the dataSet as per the index value
+   */
   const removeTab = useCallback(
     (index: number) => {
       if (data?.length <= 0) {
@@ -163,6 +186,11 @@ const CircularTabs = <T,>(
     [data, scrollToIndex, onRemoveTab]
   );
 
+  /**
+   * This is used to expose
+   * scrollToIndex, addTab, removeTab
+   * on the ref
+   */
   useImperativeHandle(
     ref,
     () => {
@@ -171,6 +199,9 @@ const CircularTabs = <T,>(
     [scrollToIndex]
   );
 
+  /**
+   * It calculates new card index as per the swipe right or left
+   */
   const getValidArrayIndex = useCallback(
     (
       swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT,
@@ -181,16 +212,8 @@ const CircularTabs = <T,>(
 
       if (swipeDirection === SWIPE_LEFT) {
         newIndex = getNextValidArrayIndex(currentIndex, totalCards);
-        // newIndex = currentIndex + 1;
-        // if (newIndex >= totalCards) {
-        //   newIndex = 0;
-        // }
       } else if (swipeDirection === SWIPE_RIGHT) {
         newIndex = getPreviousValidArrayIndex(currentIndex, totalCards);
-        // newIndex = currentIndex - 1;
-        // if (newIndex < 0) {
-        //   newIndex = totalCards - 1;
-        // }
       }
 
       return newIndex;
@@ -198,6 +221,11 @@ const CircularTabs = <T,>(
     [data]
   );
 
+  /**
+   * On the basic of swipeDirection
+   * cards positions {previous,current, next} are getting changed
+   *  and new items are being assigned to them
+   */
   const onSwipeHandler = useCallback(
     (swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT) => {
       if (swipeDirection === SWIPE_LEFT) {
@@ -247,6 +275,10 @@ const CircularTabs = <T,>(
     [onSwipeHandler]
   );
 
+  /**
+   * Translate cards in horizontal direction as we drag cards
+   * with swipe left and right gesture
+   */
   const onUpdateGesture = useCallback(
     (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
@@ -265,6 +297,9 @@ const CircularTabs = <T,>(
     ]
   );
 
+  /**
+   * As we stop dragging cards, this will figure out the final position of all three cards
+   */
   const onEndGesture = useCallback(
     (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
@@ -350,6 +385,10 @@ const CircularTabs = <T,>(
     ]
   );
 
+  /**
+   * At the end of gesture cycle,
+   * finally new cards position and data will assigned to them accordingly
+   */
   const onFinalizeGesture = useCallback(
     (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
@@ -398,14 +437,17 @@ const CircularTabs = <T,>(
           // backgroundColor: "whi",
         }}
       >
+        {/* Card A, initially positioned on the left of the ViewPort */}
         <Animated.View style={[styles.absolute, cardAStyle]}>
           {renderer(data[cardIndex.cardA], cardIndex.cardA)}
         </Animated.View>
 
+        {/* Card C, initially positioned on the right of the ViewPort */}
         <Animated.View style={[styles.absolute, cardCStyle]}>
           {renderer(data[cardIndex.cardC], cardIndex.cardC)}
         </Animated.View>
 
+        {/* Card B, initially positioned on the center of the ViewPort */}
         <Animated.View style={[styles.absolute, cardBStyle]}>
           {renderer(data[cardIndex.cardB], cardIndex.cardB)}
         </Animated.View>
