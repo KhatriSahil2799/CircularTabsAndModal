@@ -2,6 +2,7 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   ViewStyle,
 } from "react-native";
@@ -11,12 +12,13 @@ interface ButtonProps {
   title: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
+  titleStyle?: StyleProp<TextStyle>;
 }
 
-const Button = ({ title, onPress, style }: ButtonProps) => {
+const Button = ({ title, onPress, style, titleStyle }: ButtonProps) => {
   return (
     <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, titleStyle]}>{title}</Text>
     </TouchableOpacity>
   );
 };
