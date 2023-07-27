@@ -59,13 +59,13 @@ export default function App() {
   const END_POSITION = width;
 
   const cardAPosition = useSharedValue(0);
-  const cardAPanOffset = useSharedValue(-width + 20);
+  const cardAPanOffset = useSharedValue(-width);
 
   const cardBPosition = useSharedValue(0);
   const cardBPanOffset = useSharedValue(0);
 
   const cardCPosition = useSharedValue(0);
-  const cardCPanOffset = useSharedValue(width - 20);
+  const cardCPanOffset = useSharedValue(width);
 
   const panGesture = Gesture.Pan()
     .onUpdate((e) => {
@@ -83,28 +83,78 @@ export default function App() {
 
       if (Math.abs(e.translationX) >= width / 3) {
         if (e.translationX < 0) {
-          cardBPosition.value = withTiming(-END_POSITION, { duration: 100 });
-          cardBPanOffset.value = -END_POSITION;
-          cardCPosition.value = withTiming(0, { duration: 100 });
-          cardCPanOffset.value = 0;
-          cardAPosition.value = withTiming(END_POSITION, { duration: 100 });
-          cardAPanOffset.value = END_POSITION;
+          if (cardBPanOffset.value <= -width) {
+            cardBPanOffset.value = width;
+          } else {
+            cardBPosition.value = withTiming(
+              cardBPanOffset.value - END_POSITION,
+              { duration: 100 }
+            );
+            cardBPanOffset.value = cardBPanOffset.value - END_POSITION;
+          }
+
+          if (cardCPanOffset.value <= -width) {
+            cardCPanOffset.value = width;
+          } else {
+            cardCPosition.value = withTiming(
+              cardCPanOffset.value - END_POSITION,
+              { duration: 100 }
+            );
+            cardCPanOffset.value = cardCPanOffset.value - END_POSITION;
+          }
+
+          if (cardAPanOffset.value <= -width) {
+            cardAPanOffset.value = width;
+          } else {
+            cardAPosition.value = withTiming(
+              cardAPanOffset.value - END_POSITION,
+              { duration: 100 }
+            );
+            cardAPanOffset.value = cardAPanOffset.value - END_POSITION;
+          }
         }
         if (e.translationX > 0) {
-          cardBPosition.value = withTiming(END_POSITION, { duration: 100 });
-          cardBPanOffset.value = END_POSITION;
-          cardAPosition.value = withTiming(0, { duration: 100 });
-          cardAPanOffset.value = 0;
-          cardCPosition.value = withTiming(-END_POSITION, { duration: 100 });
-          cardCPanOffset.value = END_POSITION;
+          if (cardBPanOffset.value >= width) {
+            cardBPanOffset.value = -width;
+          } else {
+            cardBPosition.value = withTiming(
+              cardBPanOffset.value + END_POSITION,
+              { duration: 100 }
+            );
+            cardBPanOffset.value = cardBPanOffset.value + END_POSITION;
+          }
+
+          if (cardAPanOffset.value >= width) {
+            cardAPanOffset.value = -width;
+          } else {
+            cardAPosition.value = withTiming(cardAPanOffset.value + width, {
+              duration: 100,
+            });
+            cardAPanOffset.value = cardAPanOffset.value + width;
+          }
+
+          if (cardCPanOffset.value >= width) {
+            cardCPanOffset.value = -width;
+          } else {
+            cardCPosition.value = withTiming(
+              cardCPanOffset.value + END_POSITION,
+              { duration: 100 }
+            );
+            cardCPanOffset.value = cardCPanOffset.value + END_POSITION;
+          }
         }
       } else {
         cardBPosition.value = withTiming(cardBPanOffset.value, {
           duration: 100,
         });
-        // cardAPanOffset.value = cardAPanOffset.value;
-        // cardBPanOffset.value = cardBPanOffset.value;
-        // cardCPanOffset.value = cardCPanOffset.value;
+
+        cardCPosition.value = withTiming(cardCPanOffset.value, {
+          duration: 100,
+        });
+
+        cardAPosition.value = withTiming(cardAPanOffset.value, {
+          duration: 100,
+        });
       }
 
       // if (Number(cardAPanOffset.value / width) < 0) {
@@ -112,11 +162,6 @@ export default function App() {
       // }
 
       // runOnJS(setPivot)(1);
-
-      // if (cardAPosition.value < END_POSITION / 2) {
-      //   cardAPosition.value = withTiming(-END_POSITION * 1, { duration: 100 });
-      //   cardAPanOffset.value = -END_POSITION;
-      // }
     });
 
   const cardAStyle = useAnimatedStyle(() => {
@@ -129,17 +174,23 @@ export default function App() {
     };
   });
   const cardBStyle = useAnimatedStyle(() => {
-    console.log(
-      "🚀 ~ file: App.js:133 ~ cardBStyle ~ cardBPosition.value :",
-      cardBPosition.value
-    );
+    // console.log(
+    //   "🚀 ~ file: App.js:133 ~ cardBStyle ~ cardBPosition.value :",
+    //   cardBPosition.value
+    // );
     return {
       transform: [{ translateX: cardBPosition.value }],
     };
   });
-  const cardCStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: cardCPosition.value }],
-  }));
+  const cardCStyle = useAnimatedStyle(() => {
+    // console.log(
+    //   "🚀 ~ file: App.js:155 ~ cardCStyle ~ cardCPosition.value :",
+    //   cardCPosition.value
+    // );
+    return {
+      transform: [{ translateX: cardCPosition.value }],
+    };
+  });
 
   return (
     <View style={styles.container}>
@@ -156,17 +207,17 @@ export default function App() {
             // overflow: "scroll",
           }}
         >
-          {/* <Animated.View style={[styles.absoluteA, cardAStyle]}>
+          <Animated.View style={[styles.absoluteA, cardAStyle]}>
             {cardA}
-          </Animated.View> */}
+          </Animated.View>
+
+          <Animated.View style={[styles.absoluteC, cardCStyle]}>
+            {CardC}
+          </Animated.View>
 
           <Animated.View style={[styles.absoluteB, cardBStyle]}>
             {CardB}
           </Animated.View>
-
-          {/* <Animated.View style={[styles.absoluteC, cardCStyle]}>
-            {CardC}
-          </Animated.View> */}
         </View>
       </GestureDetector>
     </View>
