@@ -101,6 +101,15 @@ const SwipeableModal = ({ type, snapPoint }) => {
         [height - snapPoint, height - snapPoint, height]
       );
     }
+
+    if (type === TOP) {
+      //   modalPosition.value = modalPanOffset.value + e.translationY;
+      modalPosition.value = interpolate(
+        modalPanOffset.value - e.translationY,
+        [0, height - snapPoint, height],
+        [height - snapPoint, height - snapPoint, height]
+      );
+    }
   };
 
   const onEndGesture = useCallback(
@@ -162,8 +171,11 @@ const SwipeableModal = ({ type, snapPoint }) => {
     // // for right modal
     // left: modalPosition.value,
 
+    // // for bottom modal
+    //   top: modalPosition.value,
+
     // for bottom modal
-    top: modalPosition.value,
+    bottom: modalPosition.value,
   }));
 
   return (
