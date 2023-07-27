@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -44,8 +44,12 @@ const data = [
   "card J",
 ];
 
+interface CircularTabsInterface {
+  data: Array<any>;
+}
+
 const CircularTabs = ({ children }) => {
-  const [cardPosition, setCardPosition] = useState({
+  const cardPosition = useRef({
     previous: "CardA",
     current: "CardB",
     next: "CardC",
@@ -98,21 +102,21 @@ const CircularTabs = ({ children }) => {
 
   const onSwipeHandler = (swipeDirection) => {
     if (swipeDirection === SWIPE_LEFT) {
-      if (cardPosition.previous === "CardA") {
+      if (cardPosition.current.previous === "CardA") {
         setCardIndex((prev) => {
           return {
             ...prev,
             cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
           };
         });
-      } else if (cardPosition.previous === "CardB") {
+      } else if (cardPosition.current.previous === "CardB") {
         setCardIndex((prev) => {
           return {
             ...prev,
             cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
           };
         });
-      } else if (cardPosition.previous === "CardC") {
+      } else if (cardPosition.current.previous === "CardC") {
         setCardIndex((prev) => {
           return {
             ...prev,
@@ -121,30 +125,28 @@ const CircularTabs = ({ children }) => {
         });
       }
 
-      setCardPosition((prev) => {
-        return {
-          previous: prev.current,
-          current: prev.next,
-          next: prev.previous,
-        };
-      });
+      cardPosition.current = {
+        previous: cardPosition.current.current,
+        current: cardPosition.current.next,
+        next: cardPosition.current.previous,
+      };
     }
     if (swipeDirection === SWIPE_RIGHT) {
-      if (cardPosition.next === "CardA") {
+      if (cardPosition.current.next === "CardA") {
         setCardIndex((prev) => {
           return {
             ...prev,
             cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
           };
         });
-      } else if (cardPosition.next === "CardB") {
+      } else if (cardPosition.current.next === "CardB") {
         setCardIndex((prev) => {
           return {
             ...prev,
             cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
           };
         });
-      } else if (cardPosition.next === "CardC") {
+      } else if (cardPosition.current.next === "CardC") {
         setCardIndex((prev) => {
           return {
             ...prev,
@@ -153,13 +155,11 @@ const CircularTabs = ({ children }) => {
         });
       }
 
-      setCardPosition((prev) => {
-        return {
-          previous: prev.next,
-          current: prev.previous,
-          next: prev.current,
-        };
-      });
+      cardPosition.current = {
+        previous: cardPosition.current.next,
+        current: cardPosition.current.previous,
+        next: cardPosition.current.current,
+      };
     }
   };
 
@@ -268,21 +268,15 @@ const CircularTabs = ({ children }) => {
       }
     });
 
-  const cardAStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: cardAPosition.value }],
-    };
-  });
-  const cardBStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: cardBPosition.value }],
-    };
-  });
-  const cardCStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: cardCPosition.value }],
-    };
-  });
+  const cardAStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: cardAPosition.value }],
+  }));
+  const cardBStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: cardBPosition.value }],
+  }));
+  const cardCStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: cardCPosition.value }],
+  }));
 
   return (
     <GestureDetector gesture={panGesture}>
