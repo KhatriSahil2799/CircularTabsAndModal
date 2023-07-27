@@ -15,7 +15,7 @@ const ModalDemo = () => {
   const topModalRef = useRef();
   const bottomModalRef = useRef();
   return (
-    <>
+    <View style={{ flex: 1, justifyContent: "center" }}>
       <Button
         title="Show Left Modal"
         onPress={() => leftModalRef?.current?.show?.()}
@@ -118,7 +118,7 @@ const ModalDemo = () => {
           <Text style={styles.verticalArrow}>{`↓`}</Text>
         </View>
       </SwipeableModal>
-    </>
+    </View>
   );
 };
 
