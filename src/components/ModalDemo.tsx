@@ -1,8 +1,10 @@
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import React, { useRef } from "react";
-import SwipeableModal, { SwipeableModalRefInterface } from "./SwipeableModal";
-import Button from "./Button";
-import ModalHeader from "./ModalHeader";
+import SwipeableModal, {
+  SwipeableModalRefInterface,
+} from "./Modal/SwipeableModal";
+import Button from "./Button/Button";
+import ModalHeader from "./Modal/ModalHeader";
 
 const ModalDemo = () => {
   const { width, height } = useWindowDimensions();

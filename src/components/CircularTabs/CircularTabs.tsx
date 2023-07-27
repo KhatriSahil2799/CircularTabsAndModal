@@ -434,7 +434,6 @@ const CircularTabs = <T,>(
         style={{
           flex: 1,
           width: "100%",
-          // backgroundColor: "whi",
         }}
       >
         {/* Card A, initially positioned on the left of the ViewPort */}

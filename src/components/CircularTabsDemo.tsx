@@ -1,8 +1,10 @@
 import { ScrollView, StyleSheet, View } from "react-native";
 import React, { useRef, useState } from "react";
-import CircularTabs, { CircularTabsRefInterface } from "./CircularTabs";
-import Button from "./Button";
-import Card from "./Card";
+import CircularTabs, {
+  CircularTabsRefInterface,
+} from "./CircularTabs/CircularTabs";
+import Button from "./Button/Button";
+import Card from "./CircularTabs/Card";
 
 const DATA = [
   { title: "Screen 0" },
@@ -43,6 +45,7 @@ const CircularTabsDemo = () => {
 
   return (
     <>
+      {/******************  Buttons to scroll to different tabs ************/}
       <ScrollView style={{ flex: 2, marginTop: 10 }}>
         <Button title="Add New Tab" onPress={addTab} />
 
@@ -62,7 +65,8 @@ const CircularTabsDemo = () => {
         </View>
       </ScrollView>
 
-      <View style={{ flex: 5, marginTop: 20 }}>
+      {/************************** Circular Tabs ***************************/}
+      <View style={styles.circularTabsContainer}>
         <CircularTabs
           ref={circularTabRef}
           data={data}
@@ -101,5 +105,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     flexDirection: "row",
     justifyContent: "center",
+  },
+  circularTabsContainer: {
+    flex: 5,
+    marginTop: 20,
   },
 });
