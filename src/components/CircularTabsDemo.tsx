@@ -1,8 +1,14 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import React, { useMemo } from "react";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useMemo, useRef, useState } from "react";
 import CircularTabs from "./CircularTabs";
 
-const data = [
+const DATA = [
   { title: "Screen 0" },
   { title: "Screen 1" },
   { title: "Screen 2" },
@@ -20,7 +26,7 @@ const useGenerateRandomColor = () =>
 
 const { width } = Dimensions.get("window");
 
-const Card = ({ text, bgColor }) => {
+const Card = ({ text, bgColor, removeTab, index, data }) => {
   return (
     <View
       style={{
@@ -35,31 +41,131 @@ const Card = ({ text, bgColor }) => {
       }}
     >
       <Text style={{ fontSize: 25, color: "white" }}>{text}</Text>
+      <TouchableOpacity
+        style={{
+          backgroundColor: "rgba(0,0,255,0.5)",
+          padding: 2,
+          paddingHorizontal: 10,
+          margin: 5,
+          borderRadius: 4,
+        }}
+        onPress={() => removeTab(data, index)}
+      >
+        <Text style={{ fontSize: 16, color: "white", textAlign: "center" }}>
+          Remove Tab
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
+const memoizedData = () => {
+  return DATA.map((item) => {
+    return { ...item, bgColor: useGenerateRandomColor() };
+  });
+};
+
 const CircularTabsDemo = () => {
-  const memoizedData = useMemo(() => {
-    return data.map((item) => {
-      return { ...item, bgColor: useGenerateRandomColor() };
+  const [data, setData] = useState(memoizedData);
+
+  const circularTabRef = useRef();
+
+  const addTab = (data: Array<any>) => {
+    const lastItemIndex = data?.length - 1;
+    console.log(
+      "🚀 ~ file: CircularTabsDemo.tsx:61 ~ addTab ~ lastItemIndex:",
+      lastItemIndex
+    );
+    data.push({
+      title: `Screen ${lastItemIndex + 1}`,
+      bgColor: useGenerateRandomColor(),
     });
-  }, [data]);
+
+    // setTimeout(() => {
+    circularTabRef.current?.scrollToIndex(lastItemIndex + 1);
+  };
+
+  const removeTab = (data: Array<any>, index: number) => {
+    data.splice(index, 1);
+
+    // console.log(
+    //   "🚀 ~ file: CircularTabsDemo.tsx:61 ~ addTab ~ lastItemIndex:",
+    //   lastItemIndex
+    // );
+    // data.push({
+    //   title: `Screen ${lastItemIndex + 1}`,
+    //   bgColor: useGenerateRandomColor(),
+    // });
+
+    const newLastItemIndex = data?.length - 1;
+
+    circularTabRef.current?.scrollToIndex(
+      index - 1 === newLastItemIndex ? newLastItemIndex : index
+    );
+  };
 
   return (
     <>
-      <CircularTabs<{
-        title: string;
-        bgColor: string;
-      }>
-        data={memoizedData}
+      <TouchableOpacity
+        style={{
+          backgroundColor: "rgba(0,0,255,0.5)",
+          padding: 2,
+          paddingHorizontal: 10,
+          margin: 5,
+          borderRadius: 4,
+        }}
+        onPress={() => addTab(data)}
+      >
+        <Text
+          style={{ fontSize: 16, color: "white", textAlign: "center" }}
+        >{`Add New Tab`}</Text>
+      </TouchableOpacity>
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {data?.map((item, index) => {
+          return (
+            <TouchableOpacity
+              style={{
+                backgroundColor: "rgba(0,0,255,0.5)",
+                padding: 2,
+                paddingHorizontal: 10,
+                margin: 5,
+                borderRadius: 4,
+              }}
+              onPress={() => {
+                circularTabRef.current?.scrollToIndex(index);
+              }}
+            >
+              <Text
+                style={{ fontSize: 16, color: "white" }}
+              >{`Tab ${index}`}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <CircularTabs
+        //   <{
+        //   title: string;
+        //   bgColor: string;
+        // }>
+        ref={circularTabRef}
+        data={data}
         animation={true}
         //   itemDimention={{}}
         renderer={(item, index) => {
           return (
             <Card
+              data={data}
+              index={index}
               text={item?.title}
               bgColor={item.bgColor}
+              removeTab={removeTab}
               // key="cardA"
             />
           );
