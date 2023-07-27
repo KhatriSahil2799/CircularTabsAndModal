@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import React, { useRef } from "react";
 import SwipeableModal from "./SwipeableModal";
 import Button from "./Button";
+import ModalHeader from "./ModalHeader";
 
 const ModalDemo = () => {
   const { width, height } = useWindowDimensions();
@@ -10,114 +11,117 @@ const ModalDemo = () => {
   const topModalRef = useRef();
   const bottomModalRef = useRef();
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Button
-        style={styles.button}
-        title="Show Left Modal"
-        onPress={() => leftModalRef?.current?.show?.()}
-      />
+    <>
+      <ModalHeader title={"Modal"} />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Button
+          style={styles.button}
+          title="Show Left Modal"
+          onPress={() => leftModalRef?.current?.show?.()}
+        />
 
-      <Button
-        style={styles.button}
-        title="Show Right Modal"
-        onPress={() => rightModalRef?.current?.show?.()}
-      />
+        <Button
+          style={styles.button}
+          title="Show Right Modal"
+          onPress={() => rightModalRef?.current?.show?.()}
+        />
 
-      <Button
-        style={styles.button}
-        title="Show Top Modal"
-        onPress={() => topModalRef?.current?.show?.()}
-      />
+        <Button
+          style={styles.button}
+          title="Show Top Modal"
+          onPress={() => topModalRef?.current?.show?.()}
+        />
 
-      <Button
-        style={styles.button}
-        title="Show Bottom Modal"
-        onPress={() => bottomModalRef?.current?.show?.()}
-      />
-      <SwipeableModal
-        direction="LEFT"
-        snapPoint={(width * 2) / 3}
-        ref={leftModalRef}
-      >
-        <View
-          style={[
-            styles.leftModalChildrenContainer,
-            {
-              width: (width * 2) / 3,
-              height,
-            },
-          ]}
+        <Button
+          style={styles.button}
+          title="Show Bottom Modal"
+          onPress={() => bottomModalRef?.current?.show?.()}
+        />
+        <SwipeableModal
+          direction="LEFT"
+          snapPoint={(width * 2) / 3}
+          ref={leftModalRef}
         >
-          <Text style={styles.modalText}>
-            Try Swiping left to close this modal or use Backdrop
-          </Text>
-          <Text style={styles.modalText}>{`<------------------`}</Text>
-        </View>
-      </SwipeableModal>
+          <View
+            style={[
+              styles.leftModalChildrenContainer,
+              {
+                width: (width * 2) / 3,
+                height,
+              },
+            ]}
+          >
+            <Text style={styles.modalText}>
+              Try Swiping left to close this modal or use Backdrop
+            </Text>
+            <Text style={styles.modalText}>{`<------------------`}</Text>
+          </View>
+        </SwipeableModal>
 
-      <SwipeableModal
-        direction="RIGHT"
-        snapPoint={(width * 2) / 3}
-        ref={rightModalRef}
-      >
-        <View
-          style={[
-            styles.rightModalChildrenContainer,
-            {
-              width: (width * 2) / 3,
-              height,
-            },
-          ]}
+        <SwipeableModal
+          direction="RIGHT"
+          snapPoint={(width * 2) / 3}
+          ref={rightModalRef}
         >
-          <Text style={styles.modalText}>
-            Try Swiping Right to close this modal or use Backdrop
-          </Text>
-          <Text style={styles.modalText}>{`------------------> `}</Text>
-        </View>
-      </SwipeableModal>
+          <View
+            style={[
+              styles.rightModalChildrenContainer,
+              {
+                width: (width * 2) / 3,
+                height,
+              },
+            ]}
+          >
+            <Text style={styles.modalText}>
+              Try Swiping Right to close this modal or use Backdrop
+            </Text>
+            <Text style={styles.modalText}>{`------------------> `}</Text>
+          </View>
+        </SwipeableModal>
 
-      <SwipeableModal
-        direction="TOP"
-        snapPoint={(height * 1) / 3}
-        ref={topModalRef}
-      >
-        <View
-          style={[
-            styles.topModalChildrenContainer,
-            {
-              width: width,
-              height: (height * 1) / 3,
-            },
-          ]}
+        <SwipeableModal
+          direction="TOP"
+          snapPoint={(height * 1) / 3}
+          ref={topModalRef}
         >
-          <Text style={styles.modalText}>
-            Try Swiping Up to close this modal or use Backdrop
-          </Text>
-          <Text style={styles.verticalArrow}>{`↑`}</Text>
-        </View>
-      </SwipeableModal>
+          <View
+            style={[
+              styles.topModalChildrenContainer,
+              {
+                width: width,
+                height: (height * 1) / 3,
+              },
+            ]}
+          >
+            <Text style={styles.modalText}>
+              Try Swiping Up to close this modal or use Backdrop
+            </Text>
+            <Text style={styles.verticalArrow}>{`↑`}</Text>
+          </View>
+        </SwipeableModal>
 
-      <SwipeableModal
-        direction="BOTTOM"
-        snapPoint={(height * 1) / 3}
-        ref={bottomModalRef}
-      >
-        <View
-          style={[
-            styles.bottomModalChildrenContainer,
-            {
-              width: width,
-              height: (height * 1) / 3,
-            },
-          ]}
+        <SwipeableModal
+          direction="BOTTOM"
+          snapPoint={(height * 1) / 3}
+          ref={bottomModalRef}
         >
-          <Text style={styles.modalText}>
-            Try Swiping Down to close this modal or use Backdrop
-          </Text>
-          <Text style={styles.verticalArrow}>{`↓`}</Text>
-        </View>
-      </SwipeableModal>
-    </View>
+          <View
+            style={[
+              styles.bottomModalChildrenContainer,
+              {
+                width: width,
+                height: (height * 1) / 3,
+              },
+            ]}
+          >
+            <Text style={styles.modalText}>
+              Try Swiping Down to close this modal or use Backdrop
+            </Text>
+            <Text style={styles.verticalArrow}>{`↓`}</Text>
+          </View>
+        </SwipeableModal>
+      </View>
+    </>
   );
 };
 
