@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -16,7 +16,6 @@ import {
 import Animated, {
   runOnJS,
   useAnimatedStyle,
-  withTiming,
   withSpring,
 } from "react-native-reanimated";
 import useCardsPositionAndOffset from "./useCardsPositionAndOffset";
@@ -32,10 +31,6 @@ interface CircularTabsInterface<T> {
   renderer: (item: T, index: number) => ReactNode;
 }
 
-function isIndexInArray(index: number, arr: Array<any>) {
-  // Check if the index is a non-negative integer and less than the array length.
-  return Number.isInteger(index) && index >= 0 && index < arr.length;
-}
 const SPRING_CONFIG = {
   damping: 80,
   overshootClamping: true,
@@ -50,9 +45,9 @@ const CircularTabs = <T,>({
   renderer,
 }: CircularTabsInterface<T>) => {
   const cardPosition = useRef({
-    previous: "CardA",
-    current: "CardB",
-    next: "CardC",
+    previous: "cardA",
+    current: "cardB",
+    next: "cardC",
   });
 
   const [cardIndex, setCardIndex] = useState({
@@ -60,14 +55,6 @@ const CircularTabs = <T,>({
     cardB: 0,
     cardC: 1,
   });
-
-  console.log("🚀 ~ file: CircularTabs.tsx:75 ~ cardIndex:", cardIndex);
-
-  const CardA = renderer(data[cardIndex?.cardA], cardIndex?.cardA);
-
-  const CardB = renderer(data[cardIndex?.cardB], cardIndex?.cardB);
-
-  const CardC = renderer(data[cardIndex?.cardC], cardIndex?.cardC);
 
   const {
     cardAPosition,
@@ -79,67 +66,65 @@ const CircularTabs = <T,>({
   } = useCardsPositionAndOffset({ componentWidth: width });
 
   const getValidArrayIndex = useCallback(
-    (swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT, index: number) => {
+    (
+      swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT,
+      currentIndex: number
+    ): number => {
+      const totalCards = data.length;
+      let newIndex: number;
+
       if (swipeDirection === SWIPE_LEFT) {
-        return isIndexInArray(index, data) ? index : 0;
+        newIndex = currentIndex + 1;
+        if (newIndex >= totalCards) {
+          newIndex = 0;
+        }
+      } else if (swipeDirection === SWIPE_RIGHT) {
+        newIndex = currentIndex - 1;
+        if (newIndex < 0) {
+          newIndex = totalCards - 1;
+        }
       }
-      if (swipeDirection === SWIPE_RIGHT) {
-        return isIndexInArray(index, data) ? index : data.length - 1;
-      }
-      return 0;
+
+      return newIndex;
     },
-    [data, isIndexInArray]
+    [data]
   );
 
   const onSwipeHandler = useCallback(
     (swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT) => {
       if (swipeDirection === SWIPE_LEFT) {
-        if (cardPosition.current.previous === "CardA") {
-          setCardIndex((prev) => ({
-            ...prev,
-            cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
-          }));
-        } else if (cardPosition.current.previous === "CardB") {
-          setCardIndex((prev) => ({
-            ...prev,
-            cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
-          }));
-        } else if (cardPosition.current.previous === "CardC") {
-          setCardIndex((prev) => ({
-            ...prev,
-            cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
-          }));
-        }
-
         cardPosition.current = {
           previous: cardPosition.current.current,
           current: cardPosition.current.next,
           next: cardPosition.current.previous,
         };
-      }
-      if (swipeDirection === SWIPE_RIGHT) {
-        if (cardPosition.current.next === "CardA") {
-          setCardIndex((prev) => ({
-            ...prev,
-            cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
-          }));
-        } else if (cardPosition.current.next === "CardB") {
-          setCardIndex((prev) => ({
-            ...prev,
-            cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
-          }));
-        } else if (cardPosition.current.next === "CardC") {
-          setCardIndex((prev) => ({
-            ...prev,
-            cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
-          }));
-        }
+        setCardIndex((prev) => {
+          const newCardIndex = { ...prev };
+          newCardIndex[cardPosition.current.next] = getValidArrayIndex(
+            swipeDirection,
+            prev[cardPosition.current.current]
+          );
 
+          return newCardIndex;
+        });
+      }
+
+      if (swipeDirection === SWIPE_RIGHT) {
         cardPosition.current = {
           previous: cardPosition.current.next,
           current: cardPosition.current.previous,
           next: cardPosition.current.current,
         };
+
+        setCardIndex((prev) => {
+          const newCardIndex = { ...prev };
+          newCardIndex[cardPosition.current.previous] = getValidArrayIndex(
+            swipeDirection,
+            prev[cardPosition.current.current]
+          );
+
+          return newCardIndex;
+        });
       }
     },
     [cardPosition, setCardIndex, getValidArrayIndex]
@@ -176,7 +161,7 @@ const CircularTabs = <T,>({
     (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
 
-      if (Math.abs(e.translationX) >= width / 4) {
+      if (Math.abs(e.translationX) >= width / 16) {
         if (e.translationX < 0) {
           if (cardBPanOffset.value <= -width) {
             cardBPanOffset.value = width;
@@ -261,7 +246,7 @@ const CircularTabs = <T,>({
     (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
       "worklet";
 
-      if (Math.abs(e.translationX) >= width / 3) {
+      if (Math.abs(e.translationX) >= width / 16) {
         if (e.translationX < 0) {
           changeCards("SWIPE_LEFT");
         }
@@ -302,15 +287,15 @@ const CircularTabs = <T,>({
         }}
       >
         <Animated.View style={[styles.absolute, cardAStyle]}>
-          {CardA}
+          {renderer(data[cardIndex.cardA], cardIndex.cardA)}
         </Animated.View>
 
         <Animated.View style={[styles.absolute, cardCStyle]}>
-          {CardC}
+          {renderer(data[cardIndex.cardC], cardIndex.cardC)}
         </Animated.View>
 
         <Animated.View style={[styles.absolute, cardBStyle]}>
-          {CardB}
+          {renderer(data[cardIndex.cardB], cardIndex.cardB)}
         </Animated.View>
       </View>
     </GestureDetector>
