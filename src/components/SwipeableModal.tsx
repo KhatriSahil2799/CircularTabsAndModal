@@ -152,6 +152,7 @@ const SwipeableModal = (
   }, [direction, modalPosition, snapPoint]);
 
   const hide = useCallback(() => {
+    setIsBackdropVisible(false);
     if (direction === LEFT || direction === RIGHT) {
       modalPosition.value = withTiming(width, { duration: 300 });
     }
@@ -159,7 +160,6 @@ const SwipeableModal = (
     if (direction === BOTTOM || direction === TOP) {
       modalPosition.value = withTiming(height, { duration: 300 });
     }
-    setIsBackdropVisible(false);
   }, [direction, modalPosition]);
 
   useImperativeHandle(
