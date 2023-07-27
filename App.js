@@ -144,7 +144,7 @@ export default function App() {
       });
     }
     if (swipeDirection === SWIPE_RIGHT) {
-      if (cardPosition.previous === "CardA") {
+      if (cardPosition.next === "CardA") {
         setCardIndex((prev) => {
           // @todo
           return {
@@ -152,7 +152,7 @@ export default function App() {
             cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
           };
         });
-      } else if (cardPosition.previous === "CardB") {
+      } else if (cardPosition.next === "CardB") {
         setCardIndex((prev) => {
           // @todo
           return {
