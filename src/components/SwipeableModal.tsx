@@ -1,5 +1,4 @@
 import {
-  Button,
   Dimensions,
   Pressable,
   StyleSheet,
@@ -7,18 +6,18 @@ import {
   ViewStyle,
 } from "react-native";
 import React, {
+  ReactNode,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
+  useState,
 } from "react";
 import Animated, {
   SharedValue,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import {
@@ -29,11 +28,7 @@ import {
   PanGestureHandlerEventPayload,
 } from "react-native-gesture-handler";
 
-const {
-  width,
-  height,
-  // : ScreenHeight
-} = Dimensions.get("screen");
+const { width, height } = Dimensions.get("screen");
 
 const LEFT = "LEFT";
 const RIGHT = "RIGHT";
@@ -86,6 +81,7 @@ interface SwipeableModalInterface {
    * @default: This is true by default
    */
   enableBackdropDismiss: boolean;
+  children: ReactNode;
 }
 
 const SwipeableModal = (
@@ -102,6 +98,8 @@ const SwipeableModal = (
   ref
 ) => {
   //   const {} = useWindowDimensions();
+
+  const [isBackdropVisible, setIsBackdropVisible] = useState(false);
 
   const modalPosition = useSharedValue(
     direction === LEFT || direction === RIGHT ? width : height
@@ -198,6 +196,7 @@ const SwipeableModal = (
     if (direction === BOTTOM || direction === TOP) {
       modalPosition.value = withTiming(height - snapPoint, { duration: 300 });
     }
+    setIsBackdropVisible(true);
   };
 
   const hide = () => {
@@ -208,6 +207,7 @@ const SwipeableModal = (
     if (direction === BOTTOM || direction === TOP) {
       modalPosition.value = withTiming(height, { duration: 300 });
     }
+    setIsBackdropVisible(false);
   };
 
   useImperativeHandle(
@@ -227,15 +227,15 @@ const SwipeableModal = (
 
   return (
     <>
-      <Pressable style={[styles.container, containerStyle]} onPress={hide}>
-        {/* <Button title="show modal" onPress={show} /> */}
+      {enableBackdropDismiss && isBackdropVisible && (
+        <Pressable style={[styles.container, containerStyle]} onPress={hide} />
+      )}
 
-        <GestureDetector gesture={panGesture}>
-          <Animated.View style={[styles.absolute, style, modalStyle]}>
-            {children}
-          </Animated.View>
-        </GestureDetector>
-      </Pressable>
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={[styles.absolute, style, modalStyle]}>
+          {children}
+        </Animated.View>
+      </GestureDetector>
     </>
   );
 };
@@ -245,7 +245,6 @@ export default forwardRef(SwipeableModal);
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 0, 0, 0.25)",
     justifyContent: "center",
   },
   absolute: {
