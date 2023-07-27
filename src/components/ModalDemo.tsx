@@ -1,19 +1,23 @@
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import React, { useRef } from "react";
-import SwipeableModal from "./SwipeableModal";
+import SwipeableModal, { SwipeableModalRefInterface } from "./SwipeableModal";
 import Button from "./Button";
 import ModalHeader from "./ModalHeader";
 
 const ModalDemo = () => {
   const { width, height } = useWindowDimensions();
-  const leftModalRef = useRef();
-  const rightModalRef = useRef();
-  const topModalRef = useRef();
-  const bottomModalRef = useRef();
+
+  /******** Ref for all 4 modals *******/
+  const leftModalRef = useRef<SwipeableModalRefInterface>();
+  const rightModalRef = useRef<SwipeableModalRefInterface>();
+  const topModalRef = useRef<SwipeableModalRefInterface>();
+  const bottomModalRef = useRef<SwipeableModalRefInterface>();
+
   return (
     <>
       <ModalHeader title={"Modal"} />
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.container}>
+        {/*******  Buttons to show all 4 modals (Left, Right, Top and Bottom) ********/}
         <Button
           style={styles.button}
           title="Show Left Modal"
@@ -37,6 +41,8 @@ const ModalDemo = () => {
           title="Show Bottom Modal"
           onPress={() => bottomModalRef?.current?.show?.()}
         />
+
+        {/***********************  Left Modal ***********************/}
         <SwipeableModal
           direction="LEFT"
           snapPoint={(width * 2) / 3}
@@ -58,6 +64,7 @@ const ModalDemo = () => {
           </View>
         </SwipeableModal>
 
+        {/***********************  Right Modal ***********************/}
         <SwipeableModal
           direction="RIGHT"
           snapPoint={(width * 2) / 3}
@@ -79,6 +86,7 @@ const ModalDemo = () => {
           </View>
         </SwipeableModal>
 
+        {/***********************  Top Modal ***********************/}
         <SwipeableModal
           direction="TOP"
           snapPoint={(height * 1) / 3}
@@ -100,6 +108,7 @@ const ModalDemo = () => {
           </View>
         </SwipeableModal>
 
+        {/***********************  Bottom Modal ***********************/}
         <SwipeableModal
           direction="BOTTOM"
           snapPoint={(height * 1) / 3}
@@ -128,6 +137,11 @@ const ModalDemo = () => {
 export default ModalDemo;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   button: { padding: 5, width: "60%" },
   modalText: {
     color: "white",

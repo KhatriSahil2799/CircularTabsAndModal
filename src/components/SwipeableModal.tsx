@@ -33,8 +33,6 @@ type DirectionType = typeof LEFT | typeof RIGHT | typeof TOP | typeof BOTTOM;
 interface SwipeableModalInterface {
   direction: DirectionType;
   snapPoint: number;
-  // onShow: () => void;
-  // onHide: () => void;
   style?: ViewStyle;
   containerStyle?: ViewStyle;
   /**
@@ -45,15 +43,18 @@ interface SwipeableModalInterface {
   children: ReactNode;
 }
 
+export interface SwipeableModalRefInterface {
+  show: () => void;
+  hide: () => void;
+}
+
 const SwipeableModal = (
   {
-    direction,
-    snapPoint,
-    // onShow,
-    // onHide,
-    containerStyle,
     style,
     children,
+    direction,
+    snapPoint,
+    containerStyle,
     enableBackdropDismiss = true,
   }: SwipeableModalInterface,
   ref: React.Ref<unknown> | undefined
@@ -222,7 +223,9 @@ const SwipeableModal = (
   );
 };
 
-export default forwardRef(SwipeableModal);
+export default forwardRef<SwipeableModalRefInterface, SwipeableModalInterface>(
+  SwipeableModal
+);
 
 const styles = StyleSheet.create({
   container: {
