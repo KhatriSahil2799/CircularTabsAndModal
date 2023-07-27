@@ -1,6 +1,20 @@
-import { Button, Dimensions, StyleSheet, Text, View } from "react-native";
-import React, { useCallback, useEffect, useMemo } from "react";
+import {
+  Button,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  ViewStyle,
+} from "react-native";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+} from "react";
 import Animated, {
+  SharedValue,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -15,7 +29,11 @@ import {
   PanGestureHandlerEventPayload,
 } from "react-native-gesture-handler";
 
-const { width, height } = Dimensions.get("screen");
+const {
+  width,
+  height,
+  // : ScreenHeight
+} = Dimensions.get("screen");
 
 const LEFT = "LEFT";
 const RIGHT = "RIGHT";
@@ -24,54 +42,78 @@ const BOTTOM = "BOTTOM";
 
 type DirectionType = typeof LEFT | typeof RIGHT | typeof TOP | typeof BOTTOM;
 
-const getModalInitialPosition = (
+const getModalDirectionAnimatedStyle = (
   direction: DirectionType,
-  screenWidth: number,
-  ScreenHeight: number
+  modalPosition: SharedValue<number>
 ) => {
+  "worklet";
+
+  if (direction === LEFT) {
+    return {
+      right: modalPosition.value,
+      bottom: 0,
+    };
+  }
+  if (direction === RIGHT) {
+    return {
+      left: modalPosition.value,
+      bottom: 0,
+    };
+  }
   if (direction === TOP) {
     return {
-      bottom: ScreenHeight,
+      bottom: modalPosition.value,
       left: 0,
     };
   }
   if (direction === BOTTOM) {
     return {
-      top: ScreenHeight,
+      top: modalPosition.value,
       left: 0,
-    };
-  }
-  if (direction === LEFT) {
-    return {
-      bottom: 0,
-      right: screenWidth,
-    };
-  }
-  if (direction === RIGHT) {
-    return {
-      bottom: 0,
-      left: screenWidth,
     };
   }
 };
 
-const SwipeableModal = ({ type, snapPoint }) => {
-  // const modalPosition = useSharedValue(width);
-  const modalPosition = useSharedValue(height);
-  const modalPanOffset = useSharedValue(0);
+interface SwipeableModalInterface {
+  direction: DirectionType;
+  snapPoint: number;
+  onShow: () => void;
+  onHide: () => void;
+  style: ViewStyle;
+  containerStyle: ViewStyle;
+  /**
+   * @description: disables the modal backdrop hiding feature
+   * @default: This is true by default
+   */
+  enableBackdropDismiss: boolean;
+}
 
-  const onLeftUpdate = () => {};
+const SwipeableModal = (
+  {
+    direction,
+    snapPoint,
+    onShow,
+    onHide,
+    containerStyle,
+    style,
+    children,
+    enableBackdropDismiss = true,
+  }: SwipeableModalInterface,
+  ref
+) => {
+  //   const {} = useWindowDimensions();
+
+  const modalPosition = useSharedValue(
+    direction === LEFT || direction === RIGHT ? width : height
+  );
+  const modalPanOffset = useSharedValue(0);
 
   const onUpdateGesture = (
     e: GestureUpdateEvent<PanGestureHandlerEventPayload>
   ) => {
     "worklet";
 
-    console.log(
-      "🚀 ~ file: SwipeableModal.tsx:73 ~ SwipeableModal ~ e.translationX:",
-      e.translationX
-    );
-    if (type === LEFT) {
+    if (direction === LEFT) {
       //   modalPosition.value = modalPanOffset.value - e.translationX;
       modalPosition.value = interpolate(
         modalPanOffset.value - e.translationX,
@@ -80,11 +122,7 @@ const SwipeableModal = ({ type, snapPoint }) => {
       );
     }
 
-    console.log(
-      "🚀 ~ file: SwipeableModal.tsx:86 ~ SwipeableModal ~ modalPanOffset.value + e.translationX:",
-      modalPanOffset.value + e.translationX
-    );
-    if (type === RIGHT) {
+    if (direction === RIGHT) {
       //   modalPosition.value = modalPanOffset.value + e.translationX;
       modalPosition.value = interpolate(
         modalPanOffset.value + e.translationX,
@@ -93,7 +131,7 @@ const SwipeableModal = ({ type, snapPoint }) => {
       );
     }
 
-    if (type === BOTTOM) {
+    if (direction === BOTTOM) {
       //   modalPosition.value = modalPanOffset.value + e.translationY;
       modalPosition.value = interpolate(
         modalPanOffset.value + e.translationY,
@@ -102,7 +140,7 @@ const SwipeableModal = ({ type, snapPoint }) => {
       );
     }
 
-    if (type === TOP) {
+    if (direction === TOP) {
       //   modalPosition.value = modalPanOffset.value + e.translationY;
       modalPosition.value = interpolate(
         modalPanOffset.value - e.translationY,
@@ -119,7 +157,7 @@ const SwipeableModal = ({ type, snapPoint }) => {
       /**
        * Closes the modal if it goes below threshold
        */
-      if (type === LEFT || type === RIGHT) {
+      if (direction === LEFT || direction === RIGHT) {
         if (modalPosition.value > width - snapPoint) {
           modalPosition.value = withTiming(width, {
             duration: 100,
@@ -130,7 +168,7 @@ const SwipeableModal = ({ type, snapPoint }) => {
       /**
        * Closes the modal if it goes below threshold
        */
-      if (type === BOTTOM || type === TOP) {
+      if (direction === BOTTOM || direction === TOP) {
         if (modalPosition.value > height - snapPoint) {
           modalPosition.value = withTiming(height, {
             duration: 100,
@@ -149,67 +187,68 @@ const SwipeableModal = ({ type, snapPoint }) => {
         })
         .onUpdate(onUpdateGesture)
         .onEnd(onEndGesture),
-    // .onFinalize(onFinalizeGesture),
-    [
-      onEndGesture,
-      // onFinalizeGesture,
-      onUpdateGesture,
-    ]
+    [onEndGesture, onUpdateGesture]
   );
 
   const show = () => {
-    console.log("called");
+    if (direction === LEFT || direction === RIGHT) {
+      modalPosition.value = withTiming(width - snapPoint, { duration: 300 });
+    }
 
-    modalPosition.value = withTiming(height - snapPoint, { duration: 300 });
-    modalPanOffset.value = snapPoint;
+    if (direction === BOTTOM || direction === TOP) {
+      modalPosition.value = withTiming(height - snapPoint, { duration: 300 });
+    }
   };
 
-  const modalStyle = useAnimatedStyle(() => ({
-    // // for left modal
-    // right: modalPosition.value,
+  const hide = () => {
+    if (direction === LEFT || direction === RIGHT) {
+      modalPosition.value = withTiming(width, { duration: 300 });
+    }
 
-    // // for right modal
-    // left: modalPosition.value,
+    if (direction === BOTTOM || direction === TOP) {
+      modalPosition.value = withTiming(height, { duration: 300 });
+    }
+  };
 
-    // // for bottom modal
-    //   top: modalPosition.value,
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        show,
+        hide,
+      };
+    },
+    [show, hide]
+  );
 
-    // for bottom modal
-    bottom: modalPosition.value,
-  }));
+  const modalStyle = useAnimatedStyle(() => {
+    return getModalDirectionAnimatedStyle(direction, modalPosition);
+  });
 
   return (
-    <View
-      style={{
-        // flex: 1,
-        // width,
-        // height,
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: "red",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Button title="left modal" onPress={show} />
-      <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.absolute, modalStyle]}>
-          <Text>SwipeableModal</Text>
-        </Animated.View>
-      </GestureDetector>
-    </View>
+    <>
+      <Pressable style={[styles.container, containerStyle]} onPress={hide}>
+        {/* <Button title="show modal" onPress={show} /> */}
+
+        <GestureDetector gesture={panGesture}>
+          <Animated.View style={[styles.absolute, style, modalStyle]}>
+            {children}
+          </Animated.View>
+        </GestureDetector>
+      </Pressable>
+    </>
   );
 };
 
-export default SwipeableModal;
+export default forwardRef(SwipeableModal);
 
 const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255, 0, 0, 0.25)",
+    justifyContent: "center",
+  },
   absolute: {
-    width: 200,
-    height: 200,
     position: "absolute",
-    // top: 100,
-    left: 0,
-    backgroundColor: "yellow",
-    zIndex: 1,
   },
 });
