@@ -4,7 +4,6 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
-  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import useCardsPositionAndOffset from "./useCardsPositionAndOffset";
@@ -14,23 +13,20 @@ const { width } = Dimensions.get("screen");
 const SWIPE_LEFT = "SWIPE_LEFT";
 const SWIPE_RIGHT = "SWIPE_RIGHT";
 
-const useGenerateRandomColor = () => {
-  return "#" + Math.random().toString(16).substr(-6);
-};
+const useGenerateRandomColor = () =>
+  `#${Math.random().toString(16).substr(-6)}`;
 
-const Card = ({ text }) => {
-  return (
-    <View
-      style={{
-        width: width,
-        height: 500,
-        backgroundColor: useGenerateRandomColor(),
-      }}
-    >
-      <Text>{text}</Text>
-    </View>
-  );
-};
+const Card = ({ text }) => (
+  <View
+    style={{
+      width,
+      height: 500,
+      backgroundColor: useGenerateRandomColor(),
+    }}
+  >
+    <Text>{text}</Text>
+  </View>
+);
 
 const data = [
   "card A",
@@ -49,7 +45,7 @@ interface CircularTabsInterface {
   data: Array<any>;
 }
 
-const CircularTabs = ({ children }) => {
+const CircularTabs = ({ children }: CircularTabsInterface) => {
   const cardPosition = useRef({
     previous: "CardA",
     current: "CardB",
@@ -62,17 +58,20 @@ const CircularTabs = ({ children }) => {
     cardC: 1,
   });
 
-  const CardA = useMemo(() => {
-    return <Card text={data[cardIndex.cardA] + " cardA"} key={"cardA"} />;
-  }, [cardIndex.cardA]);
+  const CardA = useMemo(
+    () => <Card text={`${data[cardIndex.cardA]} cardA`} key="cardA" />,
+    [cardIndex.cardA]
+  );
 
-  const CardB = useMemo(() => {
-    return <Card text={data[cardIndex.cardB] + " cardB"} key={"cardB"} />;
-  }, [cardIndex.cardB]);
+  const CardB = useMemo(
+    () => <Card text={`${data[cardIndex.cardB]} cardB`} key="cardB" />,
+    [cardIndex.cardB]
+  );
 
-  const CardC = useMemo(() => {
-    return <Card text={data[cardIndex.cardC] + " cardC"} key={"cardC"} />;
-  }, [cardIndex.cardC]);
+  const CardC = useMemo(
+    () => <Card text={`${data[cardIndex.cardC]} cardC`} key="cardC" />,
+    [cardIndex.cardC]
+  );
 
   const {
     cardAPosition,
@@ -102,26 +101,20 @@ const CircularTabs = ({ children }) => {
   ) => {
     if (swipeDirection === SWIPE_LEFT) {
       if (cardPosition.current.previous === "CardA") {
-        setCardIndex((prev) => {
-          return {
-            ...prev,
-            cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
-          };
-        });
+        setCardIndex((prev) => ({
+          ...prev,
+          cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
+        }));
       } else if (cardPosition.current.previous === "CardB") {
-        setCardIndex((prev) => {
-          return {
-            ...prev,
-            cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
-          };
-        });
+        setCardIndex((prev) => ({
+          ...prev,
+          cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
+        }));
       } else if (cardPosition.current.previous === "CardC") {
-        setCardIndex((prev) => {
-          return {
-            ...prev,
-            cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
-          };
-        });
+        setCardIndex((prev) => ({
+          ...prev,
+          cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
+        }));
       }
 
       cardPosition.current = {
@@ -132,26 +125,20 @@ const CircularTabs = ({ children }) => {
     }
     if (swipeDirection === SWIPE_RIGHT) {
       if (cardPosition.current.next === "CardA") {
-        setCardIndex((prev) => {
-          return {
-            ...prev,
-            cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
-          };
-        });
+        setCardIndex((prev) => ({
+          ...prev,
+          cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
+        }));
       } else if (cardPosition.current.next === "CardB") {
-        setCardIndex((prev) => {
-          return {
-            ...prev,
-            cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
-          };
-        });
+        setCardIndex((prev) => ({
+          ...prev,
+          cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
+        }));
       } else if (cardPosition.current.next === "CardC") {
-        setCardIndex((prev) => {
-          return {
-            ...prev,
-            cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
-          };
-        });
+        setCardIndex((prev) => ({
+          ...prev,
+          cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
+        }));
       }
 
       cardPosition.current = {
@@ -162,8 +149,9 @@ const CircularTabs = ({ children }) => {
     }
   };
 
-  const changeCards = (value) => {
+  const changeCards = (value: typeof SWIPE_LEFT | typeof SWIPE_RIGHT) => {
     "worklet";
+
     runOnJS(onSwipeHandler)(value);
   };
 
@@ -187,7 +175,7 @@ const CircularTabs = ({ children }) => {
                 cardBPosition.value = withTiming(cardBPanOffset.value - width, {
                   duration: 100,
                 });
-                cardBPanOffset.value = cardBPanOffset.value - width;
+                cardBPanOffset.value -= width;
               }
 
               if (cardCPanOffset.value <= -width) {
@@ -196,7 +184,7 @@ const CircularTabs = ({ children }) => {
                 cardCPosition.value = withTiming(cardCPanOffset.value - width, {
                   duration: 100,
                 });
-                cardCPanOffset.value = cardCPanOffset.value - width;
+                cardCPanOffset.value -= width;
               }
 
               if (cardAPanOffset.value <= -width) {
@@ -205,7 +193,7 @@ const CircularTabs = ({ children }) => {
                 cardAPosition.value = withTiming(cardAPanOffset.value - width, {
                   duration: 100,
                 });
-                cardAPanOffset.value = cardAPanOffset.value - width;
+                cardAPanOffset.value -= width;
               }
             }
             if (e.translationX > 0) {
@@ -215,7 +203,7 @@ const CircularTabs = ({ children }) => {
                 cardBPosition.value = withTiming(cardBPanOffset.value + width, {
                   duration: 100,
                 });
-                cardBPanOffset.value = cardBPanOffset.value + width;
+                cardBPanOffset.value += width;
               }
 
               if (cardAPanOffset.value >= width) {
@@ -224,7 +212,7 @@ const CircularTabs = ({ children }) => {
                 cardAPosition.value = withTiming(cardAPanOffset.value + width, {
                   duration: 100,
                 });
-                cardAPanOffset.value = cardAPanOffset.value + width;
+                cardAPanOffset.value += width;
               }
 
               if (cardCPanOffset.value >= width) {
@@ -233,7 +221,7 @@ const CircularTabs = ({ children }) => {
                 cardCPosition.value = withTiming(cardCPanOffset.value + width, {
                   duration: 100,
                 });
-                cardCPanOffset.value = cardCPanOffset.value + width;
+                cardCPanOffset.value += width;
               }
             }
           } else {
@@ -260,7 +248,15 @@ const CircularTabs = ({ children }) => {
             }
           }
         }),
-    []
+    [
+      cardAPanOffset,
+      cardAPosition,
+      cardBPanOffset,
+      cardBPosition,
+      cardCPanOffset,
+      cardCPosition,
+      changeCards,
+    ]
   );
 
   const cardAStyle = useAnimatedStyle(() => ({
@@ -273,10 +269,6 @@ const CircularTabs = ({ children }) => {
     transform: [{ translateX: cardCPosition.value }],
   }));
 
-  console.log(
-    "🚀 ~ file: CircularTabs.tsx:274 ~ CircularTabs ~ panGesture:",
-    panGesture
-  );
   return (
     <GestureDetector gesture={panGesture}>
       <View
