@@ -1,9 +1,9 @@
 import React, {
-  useMemo,
   useState,
   useRef,
-  useCallback,
   ReactNode,
+  useCallback,
+  useMemo,
 } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import {
@@ -17,6 +17,7 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   withTiming,
+  withSpring,
 } from "react-native-reanimated";
 import useCardsPositionAndOffset from "./useCardsPositionAndOffset";
 
@@ -35,6 +36,13 @@ function isIndexInArray(index: number, arr: Array<any>) {
   // Check if the index is a non-negative integer and less than the array length.
   return Number.isInteger(index) && index >= 0 && index < arr.length;
 }
+const SPRING_CONFIG = {
+  damping: 80,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.1,
+  restSpeedThreshold: 0.1,
+  stiffness: 500,
+};
 
 const CircularTabs = <T,>({
   data,
@@ -173,27 +181,30 @@ const CircularTabs = <T,>({
           if (cardBPanOffset.value <= -width) {
             cardBPanOffset.value = width;
           } else {
-            cardBPosition.value = withTiming(cardBPanOffset.value - width, {
-              duration: 100,
-            });
+            cardBPosition.value = withSpring(
+              cardBPanOffset.value - width,
+              SPRING_CONFIG
+            );
             cardBPanOffset.value -= width;
           }
 
           if (cardCPanOffset.value <= -width) {
             cardCPanOffset.value = width;
           } else {
-            cardCPosition.value = withTiming(cardCPanOffset.value - width, {
-              duration: 100,
-            });
+            cardCPosition.value = withSpring(
+              cardCPanOffset.value - width,
+              SPRING_CONFIG
+            );
             cardCPanOffset.value -= width;
           }
 
           if (cardAPanOffset.value <= -width) {
             cardAPanOffset.value = width;
           } else {
-            cardAPosition.value = withTiming(cardAPanOffset.value - width, {
-              duration: 100,
-            });
+            cardAPosition.value = withSpring(
+              cardAPanOffset.value - width,
+              SPRING_CONFIG
+            );
             cardAPanOffset.value -= width;
           }
         }
@@ -201,42 +212,39 @@ const CircularTabs = <T,>({
           if (cardBPanOffset.value >= width) {
             cardBPanOffset.value = -width;
           } else {
-            cardBPosition.value = withTiming(cardBPanOffset.value + width, {
-              duration: 100,
-            });
+            cardBPosition.value = withSpring(
+              cardBPanOffset.value + width,
+              SPRING_CONFIG
+            );
             cardBPanOffset.value += width;
           }
 
           if (cardAPanOffset.value >= width) {
             cardAPanOffset.value = -width;
           } else {
-            cardAPosition.value = withTiming(cardAPanOffset.value + width, {
-              duration: 100,
-            });
+            cardAPosition.value = withSpring(
+              cardAPanOffset.value + width,
+              SPRING_CONFIG
+            );
             cardAPanOffset.value += width;
           }
 
           if (cardCPanOffset.value >= width) {
             cardCPanOffset.value = -width;
           } else {
-            cardCPosition.value = withTiming(cardCPanOffset.value + width, {
-              duration: 100,
-            });
+            cardCPosition.value = withSpring(
+              cardCPanOffset.value + width,
+              SPRING_CONFIG
+            );
             cardCPanOffset.value += width;
           }
         }
       } else {
-        cardBPosition.value = withTiming(cardBPanOffset.value, {
-          duration: 100,
-        });
+        cardBPosition.value = withSpring(cardBPanOffset.value, SPRING_CONFIG);
 
-        cardCPosition.value = withTiming(cardCPanOffset.value, {
-          duration: 100,
-        });
+        cardCPosition.value = withSpring(cardCPanOffset.value, SPRING_CONFIG);
 
-        cardAPosition.value = withTiming(cardAPanOffset.value, {
-          duration: 100,
-        });
+        cardAPosition.value = withSpring(cardAPanOffset.value, SPRING_CONFIG);
       }
     },
     [
@@ -314,6 +322,5 @@ export default CircularTabs;
 const styles = StyleSheet.create({
   absolute: {
     position: "absolute",
-    // bottom: 100,
   },
 });
