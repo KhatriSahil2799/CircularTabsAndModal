@@ -56,7 +56,7 @@ const CircularTabs = ({ children }) => {
   });
 
   const [cardIndex, setCardIndex] = useState({
-    cardA: -1,
+    cardA: data.length - 1,
     cardB: 0,
     cardC: 1,
   });
@@ -72,10 +72,6 @@ const CircularTabs = ({ children }) => {
   const CardC = useMemo(() => {
     return <Card text={data[cardIndex.cardC] + " cardC"} key={"cardC"} />;
   }, [cardIndex.cardC]);
-
-  const END_POSITION = width;
-
-  const cardPivot = useSharedValue(null);
 
   const cardAPosition = useSharedValue(0);
   const cardAPanOffset = useSharedValue(-width);
@@ -100,7 +96,9 @@ const CircularTabs = ({ children }) => {
     }
   };
 
-  const onSwipeHandler = (swipeDirection) => {
+  const onSwipeHandler = (
+    swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT
+  ) => {
     if (swipeDirection === SWIPE_LEFT) {
       if (cardPosition.current.previous === "CardA") {
         setCardIndex((prev) => {
@@ -168,105 +166,101 @@ const CircularTabs = ({ children }) => {
     runOnJS(onSwipeHandler)(value);
   };
 
-  const panGesture = Gesture.Pan()
-    .onUpdate((e) => {
-      cardAPosition.value = cardAPanOffset.value + e.translationX;
-      cardBPosition.value = cardBPanOffset.value + e.translationX;
-      cardCPosition.value = cardCPanOffset.value + e.translationX;
-    })
-    /**
-     * to persist the previous scroll position
-     */
-    .onEnd((e) => {
-      if (Math.abs(e.translationX) >= width / 4) {
-        if (e.translationX < 0) {
-          // cardPivot.value = cardPivot.value + 1;
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .onUpdate((e) => {
+          cardAPosition.value = cardAPanOffset.value + e.translationX;
+          cardBPosition.value = cardBPanOffset.value + e.translationX;
+          cardCPosition.value = cardCPanOffset.value + e.translationX;
+        })
+        /**
+         * to persist the previous scroll position
+         */
+        .onEnd((e) => {
+          if (Math.abs(e.translationX) >= width / 4) {
+            if (e.translationX < 0) {
+              if (cardBPanOffset.value <= -width) {
+                cardBPanOffset.value = width;
+              } else {
+                cardBPosition.value = withTiming(cardBPanOffset.value - width, {
+                  duration: 100,
+                });
+                cardBPanOffset.value = cardBPanOffset.value - width;
+              }
 
-          if (cardBPanOffset.value <= -width) {
-            cardBPanOffset.value = width;
-          } else {
-            cardBPosition.value = withTiming(
-              cardBPanOffset.value - END_POSITION,
-              { duration: 100 }
-            );
-            cardBPanOffset.value = cardBPanOffset.value - END_POSITION;
-          }
+              if (cardCPanOffset.value <= -width) {
+                cardCPanOffset.value = width;
+              } else {
+                cardCPosition.value = withTiming(cardCPanOffset.value - width, {
+                  duration: 100,
+                });
+                cardCPanOffset.value = cardCPanOffset.value - width;
+              }
 
-          if (cardCPanOffset.value <= -width) {
-            cardCPanOffset.value = width;
-          } else {
-            cardCPosition.value = withTiming(
-              cardCPanOffset.value - END_POSITION,
-              { duration: 100 }
-            );
-            cardCPanOffset.value = cardCPanOffset.value - END_POSITION;
-          }
+              if (cardAPanOffset.value <= -width) {
+                cardAPanOffset.value = width;
+              } else {
+                cardAPosition.value = withTiming(cardAPanOffset.value - width, {
+                  duration: 100,
+                });
+                cardAPanOffset.value = cardAPanOffset.value - width;
+              }
+            }
+            if (e.translationX > 0) {
+              if (cardBPanOffset.value >= width) {
+                cardBPanOffset.value = -width;
+              } else {
+                cardBPosition.value = withTiming(cardBPanOffset.value + width, {
+                  duration: 100,
+                });
+                cardBPanOffset.value = cardBPanOffset.value + width;
+              }
 
-          if (cardAPanOffset.value <= -width) {
-            cardAPanOffset.value = width;
-          } else {
-            cardAPosition.value = withTiming(
-              cardAPanOffset.value - END_POSITION,
-              { duration: 100 }
-            );
-            cardAPanOffset.value = cardAPanOffset.value - END_POSITION;
-          }
-        }
-        if (e.translationX > 0) {
-          // cardPivot.value = cardPivot.value - 1;
-          if (cardBPanOffset.value >= width) {
-            cardBPanOffset.value = -width;
-          } else {
-            cardBPosition.value = withTiming(
-              cardBPanOffset.value + END_POSITION,
-              { duration: 100 }
-            );
-            cardBPanOffset.value = cardBPanOffset.value + END_POSITION;
-          }
+              if (cardAPanOffset.value >= width) {
+                cardAPanOffset.value = -width;
+              } else {
+                cardAPosition.value = withTiming(cardAPanOffset.value + width, {
+                  duration: 100,
+                });
+                cardAPanOffset.value = cardAPanOffset.value + width;
+              }
 
-          if (cardAPanOffset.value >= width) {
-            cardAPanOffset.value = -width;
+              if (cardCPanOffset.value >= width) {
+                cardCPanOffset.value = -width;
+              } else {
+                cardCPosition.value = withTiming(cardCPanOffset.value + width, {
+                  duration: 100,
+                });
+                cardCPanOffset.value = cardCPanOffset.value + width;
+              }
+            }
           } else {
-            cardAPosition.value = withTiming(cardAPanOffset.value + width, {
+            cardBPosition.value = withTiming(cardBPanOffset.value, {
               duration: 100,
             });
-            cardAPanOffset.value = cardAPanOffset.value + width;
+
+            cardCPosition.value = withTiming(cardCPanOffset.value, {
+              duration: 100,
+            });
+
+            cardAPosition.value = withTiming(cardAPanOffset.value, {
+              duration: 100,
+            });
           }
-
-          if (cardCPanOffset.value >= width) {
-            cardCPanOffset.value = -width;
-          } else {
-            cardCPosition.value = withTiming(
-              cardCPanOffset.value + END_POSITION,
-              { duration: 100 }
-            );
-            cardCPanOffset.value = cardCPanOffset.value + END_POSITION;
+        })
+        .onFinalize((e) => {
+          if (Math.abs(e.translationX) >= width / 3) {
+            if (e.translationX < 0) {
+              changeCards("SWIPE_LEFT");
+            }
+            if (e.translationX > 0) {
+              changeCards("SWIPE_RIGHT");
+            }
           }
-        }
-      } else {
-        cardBPosition.value = withTiming(cardBPanOffset.value, {
-          duration: 100,
-        });
-
-        cardCPosition.value = withTiming(cardCPanOffset.value, {
-          duration: 100,
-        });
-
-        cardAPosition.value = withTiming(cardAPanOffset.value, {
-          duration: 100,
-        });
-      }
-    })
-    .onFinalize((e) => {
-      if (Math.abs(e.translationX) >= width / 3) {
-        if (e.translationX < 0) {
-          changeCards("SWIPE_LEFT");
-        }
-        if (e.translationX > 0) {
-          changeCards("SWIPE_RIGHT");
-        }
-      }
-    });
+        }),
+    []
+  );
 
   const cardAStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: cardAPosition.value }],
@@ -278,6 +272,10 @@ const CircularTabs = ({ children }) => {
     transform: [{ translateX: cardCPosition.value }],
   }));
 
+  console.log(
+    "🚀 ~ file: CircularTabs.tsx:274 ~ CircularTabs ~ panGesture:",
+    panGesture
+  );
   return (
     <GestureDetector gesture={panGesture}>
       <View
