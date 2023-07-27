@@ -31,6 +31,14 @@ interface CircularTabsInterface<T> {
   data: Array<T>;
   animation: boolean;
   renderer: (item: T, index: number) => ReactNode;
+  onAddTab?: (index: number) => void;
+  onRemoveTab?: (success: boolean) => void;
+}
+
+interface CircularTabsRefInterface {
+  scrollToIndex: (index: number) => void;
+  addTab: (item: any) => void;
+  removeTab: (index: number) => void;
 }
 
 const SPRING_CONFIG = {
@@ -61,8 +69,14 @@ const getPreviousValidArrayIndex = (
 };
 
 const CircularTabs = <T,>(
-  { data, animation = true, renderer }: CircularTabsInterface<T>,
-  ref
+  {
+    data,
+    animation = true,
+    renderer,
+    onAddTab,
+    onRemoveTab,
+  }: CircularTabsInterface<T>,
+  ref: React.Ref<CircularTabsRefInterface>
 ) => {
   const cardPosition = useRef({
     previous: "cardA",
@@ -115,10 +129,43 @@ const CircularTabs = <T,>(
     ]
   );
 
+  const addTab = useCallback(
+    (item: T) => {
+      const newLastItemIndex = data?.push(item);
+
+      // Scrolls to the last item
+      scrollToIndex(newLastItemIndex - 1);
+
+      // calls the callback with the item index
+      onAddTab?.(newLastItemIndex - 1);
+    },
+    [data, scrollToIndex, onAddTab]
+  );
+
+  const removeTab = useCallback(
+    (index: number) => {
+      if (data?.length <= 0) {
+        onRemoveTab?.(false);
+        return;
+      }
+
+      data.splice(index, 1);
+      const newLastItemIndex = data?.length - 1;
+
+      const nextItemIndex =
+        index - 1 === newLastItemIndex ? newLastItemIndex : index;
+
+      scrollToIndex(nextItemIndex);
+
+      onRemoveTab?.(true);
+    },
+    [data, scrollToIndex, onRemoveTab]
+  );
+
   useImperativeHandle(
     ref,
     () => {
-      return { scrollToIndex };
+      return { scrollToIndex, addTab, removeTab };
     },
     [scrollToIndex]
   );
@@ -337,6 +384,10 @@ const CircularTabs = <T,>(
     transform: [{ translateX: cardCPosition.value }],
   }));
 
+  if (data?.length <= 0) {
+    return <></>;
+  }
+
   return (
     <GestureDetector gesture={panGesture}>
       <View
@@ -362,7 +413,9 @@ const CircularTabs = <T,>(
   );
 };
 
-export default forwardRef(CircularTabs);
+export default forwardRef<CircularTabsRefInterface, CircularTabsInterface<any>>(
+  CircularTabs
+);
 
 const styles = StyleSheet.create({
   absolute: {
