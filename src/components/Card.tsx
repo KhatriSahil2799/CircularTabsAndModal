@@ -7,7 +7,7 @@ const { width, height } = Dimensions.get("window");
 const Card = ({ circularTabRef, data, index }) => {
   return (
     <View style={[styles.container, { backgroundColor: data?.bgColor }]}>
-      <Text style={styles.container}>{data?.title}</Text>
+      <Text style={styles.title}>{data?.title}</Text>
       <Button
         title="Remove Tab"
         onPress={() => circularTabRef.current?.removeTab(index)}

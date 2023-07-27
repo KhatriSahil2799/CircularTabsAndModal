@@ -1,12 +1,7 @@
-import {
-  Button,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import React, { useRef } from "react";
 import SwipeableModal from "./SwipeableModal";
+import Button from "./Button";
 
 const ModalDemo = () => {
   const { width, height } = useWindowDimensions();
@@ -15,23 +10,27 @@ const ModalDemo = () => {
   const topModalRef = useRef();
   const bottomModalRef = useRef();
   return (
-    <View style={{ flex: 1, justifyContent: "center" }}>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Button
+        style={styles.button}
         title="Show Left Modal"
         onPress={() => leftModalRef?.current?.show?.()}
       />
 
       <Button
+        style={styles.button}
         title="Show Right Modal"
         onPress={() => rightModalRef?.current?.show?.()}
       />
 
       <Button
+        style={styles.button}
         title="Show Top Modal"
         onPress={() => topModalRef?.current?.show?.()}
       />
 
       <Button
+        style={styles.button}
         title="Show Bottom Modal"
         onPress={() => bottomModalRef?.current?.show?.()}
       />
@@ -125,6 +124,7 @@ const ModalDemo = () => {
 export default ModalDemo;
 
 const styles = StyleSheet.create({
+  button: { padding: 5, width: "60%" },
   modalText: {
     color: "white",
     fontSize: 16,
