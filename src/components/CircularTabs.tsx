@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import useCardsPositionAndOffset from "./useCardsPositionAndOffset";
 
 const { width } = Dimensions.get("screen");
 
@@ -73,16 +74,16 @@ const CircularTabs = ({ children }) => {
     return <Card text={data[cardIndex.cardC] + " cardC"} key={"cardC"} />;
   }, [cardIndex.cardC]);
 
-  const cardAPosition = useSharedValue(0);
-  const cardAPanOffset = useSharedValue(-width);
+  const {
+    cardAPosition,
+    cardAPanOffset,
+    cardBPosition,
+    cardBPanOffset,
+    cardCPosition,
+    cardCPanOffset,
+  } = useCardsPositionAndOffset({ componentWidth: width });
 
-  const cardBPosition = useSharedValue(0);
-  const cardBPanOffset = useSharedValue(0);
-
-  const cardCPosition = useSharedValue(0);
-  const cardCPanOffset = useSharedValue(width);
-
-  function isIndexInArray(index, arr) {
+  function isIndexInArray(index: number, arr: Array<any>) {
     // Check if the index is a non-negative integer and less than the array length.
     return Number.isInteger(index) && index >= 0 && index < arr.length;
   }
