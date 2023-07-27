@@ -28,10 +28,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
-    top: 35,
+    marginTop: 35,
   },
   backButton: {
-    marginHorizontal: 24,
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 18,

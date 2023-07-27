@@ -11,12 +11,12 @@ const DATA = [
   { title: "Screen 1" },
   { title: "Screen 2" },
   { title: "Screen 3" },
-  { title: "Screen 4" },
-  { title: "Screen 5" },
-  { title: "Screen 6" },
-  { title: "Screen 7" },
-  { title: "Screen 8" },
-  { title: "Screen 9" },
+  // { title: "Screen 4" },
+  // { title: "Screen 5" },
+  // { title: "Screen 6" },
+  // { title: "Screen 7" },
+  // { title: "Screen 8" },
+  // { title: "Screen 9" },
 ];
 
 const useGenerateRandomColor = () =>
