@@ -1,19 +1,19 @@
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import {
-  GestureDetector,
-  Gesture,
-  PanGestureHandler,
-} from "react-native-gesture-handler";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 
 const { width } = Dimensions.get("screen");
+
+const SWIPE_LEFT = "SWIPE_LEFT";
+const SWIPE_RIGHT = "SWIPE_RIGHT";
 
 const useGenerateRandomColor = () => {
   return "#" + Math.random().toString(16).substr(-6);
@@ -33,7 +33,18 @@ const Card = ({ text }) => {
   );
 };
 
-const data = [1, 2, 3];
+const data = [
+  "card A",
+  "card B",
+  "card C",
+  "card D",
+  "card E",
+  "card F",
+  "card G",
+  "card H",
+  "card I",
+  "card J",
+];
 
 let pivot = 0;
 
@@ -45,18 +56,33 @@ const pivotIncrement = () => {
 export default function App() {
   const [pivot, setPivot] = useState(0);
 
-  const [cardA, setCardA] = useState(<Card text={"cardA"} key={"cardA"} />);
+  const [cardPosition, setCardPosition] = useState({
+    previous: "CardA",
+    current: "CardB",
+    next: "CardC",
+  });
 
-  // let CardA = <Card text={"cardA"} key={"cardA"} />;
-  let CardB = <Card text={"cardB"} key={"cardB"} />;
-  let CardC = <Card text={"cardC"} key={"cardC"} />;
+  const [cardIndex, setCardIndex] = useState({
+    cardA: -1,
+    cardB: 0,
+    cardC: 1,
+  });
 
-  // useEffect(() => {
-  //   setCardA(<Card text={"cardD"} key={"cardD"} />);
-  //   console.log("🚀 ~ file: App.js:57 ~ useEffect ~ setCardA:");
-  // }, [pivot]);
+  const CardA = useMemo(() => {
+    return <Card text={data[cardIndex.cardA] + " cardA"} key={"cardA"} />;
+  }, [cardIndex.cardA]);
+
+  const CardB = useMemo(() => {
+    return <Card text={data[cardIndex.cardB] + " cardB"} key={"cardB"} />;
+  }, [cardIndex.cardB]);
+
+  const CardC = useMemo(() => {
+    return <Card text={data[cardIndex.cardC] + " cardC"} key={"cardC"} />;
+  }, [cardIndex.cardC]);
 
   const END_POSITION = width;
+
+  const cardPivot = useSharedValue(null);
 
   const cardAPosition = useSharedValue(0);
   const cardAPanOffset = useSharedValue(-width);
@@ -66,6 +92,98 @@ export default function App() {
 
   const cardCPosition = useSharedValue(0);
   const cardCPanOffset = useSharedValue(width);
+
+  function isIndexInArray(index, arr) {
+    // Check if the index is a non-negative integer and less than the array length.
+    return Number.isInteger(index) && index >= 0 && index < arr.length;
+  }
+
+  const getValidArrayIndex = (swipeDirection, index) => {
+    if (swipeDirection === SWIPE_LEFT) {
+      return isIndexInArray(index, data) ? index : 0;
+    }
+    if (swipeDirection === SWIPE_RIGHT) {
+      return isIndexInArray(index, data) ? index : data.length - 1;
+    }
+  };
+
+  const onSwipeHandler = (swipeDirection) => {
+    if (swipeDirection === SWIPE_LEFT) {
+      if (cardPosition.previous === "CardA") {
+        setCardIndex((prev) => {
+          // @todo
+          return {
+            ...prev,
+            cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
+          };
+        });
+      } else if (cardPosition.previous === "CardB") {
+        setCardIndex((prev) => {
+          // @todo
+          return {
+            ...prev,
+            cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
+          };
+        });
+      } else if (cardPosition.previous === "CardC") {
+        setCardIndex((prev) => {
+          // @todo
+          return {
+            ...prev,
+            cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
+          };
+        });
+      }
+
+      setCardPosition((prev) => {
+        return {
+          previous: prev.current,
+          current: prev.next,
+          next: prev.previous,
+        };
+      });
+    }
+    if (swipeDirection === SWIPE_RIGHT) {
+      if (cardPosition.previous === "CardA") {
+        setCardIndex((prev) => {
+          // @todo
+          return {
+            ...prev,
+            cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
+          };
+        });
+      } else if (cardPosition.previous === "CardB") {
+        setCardIndex((prev) => {
+          // @todo
+          return {
+            ...prev,
+            cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
+          };
+        });
+      } else if (cardPosition.next === "CardC") {
+        setCardIndex((prev) => {
+          // @todo
+          return {
+            ...prev,
+            cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
+          };
+        });
+      }
+
+      setCardPosition((prev) => {
+        return {
+          previous: prev.next,
+          current: prev.previous,
+          next: prev.current,
+        };
+      });
+    }
+  };
+
+  const changeCards = (value) => {
+    "worklet";
+    runOnJS(onSwipeHandler)(value);
+  };
 
   const panGesture = Gesture.Pan()
     .onUpdate((e) => {
@@ -83,6 +201,8 @@ export default function App() {
 
       if (Math.abs(e.translationX) >= width / 3) {
         if (e.translationX < 0) {
+          // cardPivot.value = cardPivot.value + 1;
+
           if (cardBPanOffset.value <= -width) {
             cardBPanOffset.value = width;
           } else {
@@ -114,6 +234,7 @@ export default function App() {
           }
         }
         if (e.translationX > 0) {
+          // cardPivot.value = cardPivot.value - 1;
           if (cardBPanOffset.value >= width) {
             cardBPanOffset.value = -width;
           } else {
@@ -156,12 +277,18 @@ export default function App() {
           duration: 100,
         });
       }
-
-      // if (Number(cardAPanOffset.value / width) < 0) {
-      //   runOnJS(pivotIncrement)();
-      // }
-
-      // runOnJS(setPivot)(1);
+    })
+    .onFinalize((e) => {
+      if (Math.abs(e.translationX) >= width / 3) {
+        if (e.translationX < 0) {
+          // cardPivot.value = "swipeLeft";
+          changeCards("SWIPE_LEFT");
+        }
+        if (e.translationX > 0) {
+          // cardPivot.value = cardPivot.value - 1;
+          changeCards("SWIPE_RIGHT");
+        }
+      }
     });
 
   const cardAStyle = useAnimatedStyle(() => {
@@ -192,6 +319,14 @@ export default function App() {
     };
   });
 
+  // useDerivedValue(() => {
+  //   console.log(
+  //     "🚀 ~ file: App.js:208 ~ useDerivedValue ~ cardPivot.value:",
+  //     cardPivot.value
+  //   );
+  //   runOnJS(changeCards)(cardPivot.value);
+  // }, [cardPivot.value]);
+
   return (
     <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
@@ -201,14 +336,11 @@ export default function App() {
           style={{
             flex: 1,
             width: "100%",
-            // flexDirection: "row",
-            // paddingHorizontal: 20,
             backgroundColor: "yellow",
-            // overflow: "scroll",
           }}
         >
           <Animated.View style={[styles.absoluteA, cardAStyle]}>
-            {cardA}
+            {CardA}
           </Animated.View>
 
           <Animated.View style={[styles.absoluteC, cardCStyle]}>
