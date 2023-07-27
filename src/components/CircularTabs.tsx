@@ -32,10 +32,10 @@ interface CircularTabsInterface<T> {
   animation: boolean;
   renderer: (item: T, index: number) => ReactNode;
   onAddTab?: (index: number) => void;
-  onRemoveTab?: (success: boolean) => void;
+  onRemoveTab?: (index: number, success: boolean) => void;
 }
 
-interface CircularTabsRefInterface {
+export interface CircularTabsRefInterface {
   scrollToIndex: (index: number) => void;
   addTab: (item: any) => void;
   removeTab: (index: number) => void;
@@ -102,7 +102,8 @@ const CircularTabs = <T,>(
   const scrollToIndex = useCallback(
     (index: number) => {
       if (!(index >= 0 && index < data?.length)) {
-        throw new Error(`${index} index doesn't exist`);
+        return;
+        // throw new Error(`${index} index doesn't exist`);
       }
 
       setCardIndex((prev) => {
@@ -145,7 +146,7 @@ const CircularTabs = <T,>(
   const removeTab = useCallback(
     (index: number) => {
       if (data?.length <= 0) {
-        onRemoveTab?.(false);
+        onRemoveTab?.(index, false);
         return;
       }
 
@@ -157,7 +158,7 @@ const CircularTabs = <T,>(
 
       scrollToIndex(nextItemIndex);
 
-      onRemoveTab?.(true);
+      onRemoveTab?.(index, true);
     },
     [data, scrollToIndex, onRemoveTab]
   );

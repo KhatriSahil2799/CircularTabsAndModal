@@ -5,8 +5,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useMemo, useRef, useState } from "react";
-import CircularTabs from "./CircularTabs";
+import React, { useRef, useState } from "react";
+import CircularTabs, { CircularTabsRefInterface } from "./CircularTabs";
 
 const DATA = [
   { title: "Screen 0" },
@@ -26,21 +26,20 @@ const useGenerateRandomColor = () =>
 
 const { width } = Dimensions.get("window");
 
-const Card = ({ text, bgColor, removeTab, index, data }) => {
+const Card = ({ circularTabRef, data, index }) => {
   return (
     <View
       style={{
-        // width: 200,
         width,
 
         height: 500,
         flex: 1,
-        backgroundColor: bgColor,
+        backgroundColor: data?.bgColor,
         justifyContent: "center",
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 25, color: "white" }}>{text}</Text>
+      <Text style={{ fontSize: 25, color: "white" }}>{data?.title}</Text>
       <TouchableOpacity
         style={{
           backgroundColor: "rgba(0,0,255,0.5)",
@@ -49,7 +48,7 @@ const Card = ({ text, bgColor, removeTab, index, data }) => {
           margin: 5,
           borderRadius: 4,
         }}
-        onPress={() => removeTab(data, index)}
+        onPress={() => circularTabRef.current?.removeTab(index)}
       >
         <Text style={{ fontSize: 16, color: "white", textAlign: "center" }}>
           Remove Tab
@@ -59,49 +58,25 @@ const Card = ({ text, bgColor, removeTab, index, data }) => {
   );
 };
 
-const memoizedData = () => {
-  return DATA.map((item) => {
-    return { ...item, bgColor: useGenerateRandomColor() };
-  });
-};
+const DATA_WITH_COLOR = DATA.map((item) => {
+  return { ...item, bgColor: useGenerateRandomColor() };
+});
 
 const CircularTabsDemo = () => {
-  const [data, setData] = useState(memoizedData);
+  const [data, setData] = useState(DATA_WITH_COLOR);
+  const [tabButtons, setTabButtons] = useState(
+    DATA_WITH_COLOR?.map((_, index) => {
+      return index;
+    })
+  );
+  const circularTabRef = useRef<CircularTabsRefInterface>(null);
 
-  const circularTabRef = useRef();
-
-  const addTab = (data: Array<any>) => {
+  const addTab = () => {
     const lastItemIndex = data?.length - 1;
-    console.log(
-      "🚀 ~ file: CircularTabsDemo.tsx:61 ~ addTab ~ lastItemIndex:",
-      lastItemIndex
-    );
-    data.push({
+    circularTabRef.current?.addTab({
       title: `Screen ${lastItemIndex + 1}`,
       bgColor: useGenerateRandomColor(),
     });
-
-    // setTimeout(() => {
-    circularTabRef.current?.scrollToIndex(lastItemIndex + 1);
-  };
-
-  const removeTab = (data: Array<any>, index: number) => {
-    data.splice(index, 1);
-
-    // console.log(
-    //   "🚀 ~ file: CircularTabsDemo.tsx:61 ~ addTab ~ lastItemIndex:",
-    //   lastItemIndex
-    // );
-    // data.push({
-    //   title: `Screen ${lastItemIndex + 1}`,
-    //   bgColor: useGenerateRandomColor(),
-    // });
-
-    const newLastItemIndex = data?.length - 1;
-
-    circularTabRef.current?.scrollToIndex(
-      index - 1 === newLastItemIndex ? newLastItemIndex : index
-    );
   };
 
   return (
@@ -114,7 +89,7 @@ const CircularTabsDemo = () => {
           margin: 5,
           borderRadius: 4,
         }}
-        onPress={() => addTab(data)}
+        onPress={addTab}
       >
         <Text
           style={{ fontSize: 16, color: "white", textAlign: "center" }}
@@ -127,7 +102,7 @@ const CircularTabsDemo = () => {
           justifyContent: "center",
         }}
       >
-        {data?.map((item, index) => {
+        {tabButtons?.map((itemIndex) => {
           return (
             <TouchableOpacity
               style={{
@@ -137,36 +112,41 @@ const CircularTabsDemo = () => {
                 margin: 5,
                 borderRadius: 4,
               }}
+              key={`Tab ${itemIndex}`}
               onPress={() => {
-                circularTabRef.current?.scrollToIndex(index);
+                circularTabRef.current?.scrollToIndex(itemIndex);
               }}
             >
               <Text
                 style={{ fontSize: 16, color: "white" }}
-              >{`Tab ${index}`}</Text>
+              >{`Tab ${itemIndex}`}</Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
       <CircularTabs
-        //   <{
-        //   title: string;
-        //   bgColor: string;
-        // }>
         ref={circularTabRef}
         data={data}
         animation={true}
-        //   itemDimention={{}}
+        onAddTab={(index) => {
+          setTabButtons((prev) => [...prev, index]);
+        }}
+        onRemoveTab={(index, success) => {
+          if (success) {
+            setTabButtons((prev) => {
+              prev.splice(index, 1);
+              return [...prev];
+            });
+          }
+        }}
         renderer={(item, index) => {
           return (
             <Card
-              data={data}
               index={index}
-              text={item?.title}
-              bgColor={item.bgColor}
-              removeTab={removeTab}
-              // key="cardA"
+              data={item}
+              circularTabRef={circularTabRef}
+              key={item?.title + index}
             />
           );
         }}
