@@ -41,6 +41,25 @@ const SPRING_CONFIG = {
   stiffness: 500,
 };
 
+const getNextValidArrayIndex = (currentIndex: number, dataSetSize: number) => {
+  let newIndex = currentIndex + 1;
+  if (newIndex >= dataSetSize) {
+    newIndex = 0;
+  }
+  return newIndex;
+};
+
+const getPreviousValidArrayIndex = (
+  currentIndex: number,
+  dataSetSize: number
+) => {
+  let newIndex = currentIndex - 1;
+  if (newIndex < 0) {
+    newIndex = dataSetSize - 1;
+  }
+  return newIndex;
+};
+
 const CircularTabs = <T,>(
   { data, animation = true, renderer }: CircularTabsInterface<T>,
   ref
@@ -52,9 +71,9 @@ const CircularTabs = <T,>(
   });
 
   const [cardIndex, setCardIndex] = useState({
-    cardA: data.length - 1,
+    cardA: getPreviousValidArrayIndex(0, data?.length),
     cardB: 0,
-    cardC: 1,
+    cardC: getNextValidArrayIndex(0, data?.length),
   });
 
   const {
@@ -65,28 +84,6 @@ const CircularTabs = <T,>(
     cardCPosition,
     cardCPanOffset,
   } = useCardsPositionAndOffset({ componentWidth: width });
-
-  const getNextValidArrayIndex = (
-    currentIndex: number,
-    dataSetSize: number
-  ) => {
-    let newIndex = currentIndex + 1;
-    if (newIndex >= dataSetSize) {
-      newIndex = 0;
-    }
-    return newIndex;
-  };
-
-  const getPreviousValidArrayIndex = (
-    currentIndex: number,
-    dataSetSize: number
-  ) => {
-    let newIndex = currentIndex - 1;
-    if (newIndex < 0) {
-      newIndex = dataSetSize - 1;
-    }
-    return newIndex;
-  };
 
   const scrollToIndex = useCallback(
     (index: number) => {
@@ -346,7 +343,7 @@ const CircularTabs = <T,>(
         style={{
           flex: 1,
           width: "100%",
-          backgroundColor: "yellow",
+          // backgroundColor: "whi",
         }}
       >
         <Animated.View style={[styles.absolute, cardAStyle]}>
