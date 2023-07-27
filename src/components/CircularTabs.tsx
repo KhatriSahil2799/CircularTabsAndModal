@@ -1,6 +1,12 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useCallback } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import {
+  Gesture,
+  GestureDetector,
+  GestureStateChangeEvent,
+  GestureUpdateEvent,
+  PanGestureHandlerEventPayload,
+} from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -43,9 +49,18 @@ const data = [
 
 interface CircularTabsInterface {
   data: Array<any>;
+  animation: boolean;
 }
 
-const CircularTabs = ({ children }: CircularTabsInterface) => {
+function isIndexInArray(index: number, arr: Array<any>) {
+  // Check if the index is a non-negative integer and less than the array length.
+  return Number.isInteger(index) && index >= 0 && index < arr.length;
+}
+
+const CircularTabs = ({
+  children,
+  animation = true,
+}: CircularTabsInterface) => {
   const cardPosition = useRef({
     previous: "CardA",
     current: "CardB",
@@ -57,6 +72,7 @@ const CircularTabs = ({ children }: CircularTabsInterface) => {
     cardB: 0,
     cardC: 1,
   });
+  console.log("🚀 ~ file: CircularTabs.tsx:75 ~ cardIndex:", cardIndex);
 
   const CardA = useMemo(
     () => <Card text={`${data[cardIndex.cardA]} cardA`} key="cardA" />,
@@ -82,172 +98,175 @@ const CircularTabs = ({ children }: CircularTabsInterface) => {
     cardCPanOffset,
   } = useCardsPositionAndOffset({ componentWidth: width });
 
-  function isIndexInArray(index: number, arr: Array<any>) {
-    // Check if the index is a non-negative integer and less than the array length.
-    return Number.isInteger(index) && index >= 0 && index < arr.length;
-  }
-
-  const getValidArrayIndex = (swipeDirection, index) => {
-    if (swipeDirection === SWIPE_LEFT) {
-      return isIndexInArray(index, data) ? index : 0;
-    }
-    if (swipeDirection === SWIPE_RIGHT) {
-      return isIndexInArray(index, data) ? index : data.length - 1;
-    }
-  };
-
-  const onSwipeHandler = (
-    swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT
-  ) => {
-    if (swipeDirection === SWIPE_LEFT) {
-      if (cardPosition.current.previous === "CardA") {
-        setCardIndex((prev) => ({
-          ...prev,
-          cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
-        }));
-      } else if (cardPosition.current.previous === "CardB") {
-        setCardIndex((prev) => ({
-          ...prev,
-          cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
-        }));
-      } else if (cardPosition.current.previous === "CardC") {
-        setCardIndex((prev) => ({
-          ...prev,
-          cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
-        }));
+  const getValidArrayIndex = useCallback(
+    (swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT, index: number) => {
+      if (swipeDirection === SWIPE_LEFT) {
+        return isIndexInArray(index, data) ? index : 0;
       }
-
-      cardPosition.current = {
-        previous: cardPosition.current.current,
-        current: cardPosition.current.next,
-        next: cardPosition.current.previous,
-      };
-    }
-    if (swipeDirection === SWIPE_RIGHT) {
-      if (cardPosition.current.next === "CardA") {
-        setCardIndex((prev) => ({
-          ...prev,
-          cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
-        }));
-      } else if (cardPosition.current.next === "CardB") {
-        setCardIndex((prev) => ({
-          ...prev,
-          cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
-        }));
-      } else if (cardPosition.current.next === "CardC") {
-        setCardIndex((prev) => ({
-          ...prev,
-          cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
-        }));
+      if (swipeDirection === SWIPE_RIGHT) {
+        return isIndexInArray(index, data) ? index : data.length - 1;
       }
+      return 0;
+    },
+    [data, isIndexInArray]
+  );
 
-      cardPosition.current = {
-        previous: cardPosition.current.next,
-        current: cardPosition.current.previous,
-        next: cardPosition.current.current,
-      };
-    }
-  };
+  const onSwipeHandler = useCallback(
+    (swipeDirection: typeof SWIPE_LEFT | typeof SWIPE_RIGHT) => {
+      if (swipeDirection === SWIPE_LEFT) {
+        if (cardPosition.current.previous === "CardA") {
+          setCardIndex((prev) => ({
+            ...prev,
+            cardA: getValidArrayIndex(swipeDirection, prev.cardC + 1),
+          }));
+        } else if (cardPosition.current.previous === "CardB") {
+          setCardIndex((prev) => ({
+            ...prev,
+            cardB: getValidArrayIndex(swipeDirection, prev.cardA + 1),
+          }));
+        } else if (cardPosition.current.previous === "CardC") {
+          setCardIndex((prev) => ({
+            ...prev,
+            cardC: getValidArrayIndex(swipeDirection, prev.cardB + 1),
+          }));
+        }
 
-  const changeCards = (value: typeof SWIPE_LEFT | typeof SWIPE_RIGHT) => {
-    "worklet";
+        cardPosition.current = {
+          previous: cardPosition.current.current,
+          current: cardPosition.current.next,
+          next: cardPosition.current.previous,
+        };
+      }
+      if (swipeDirection === SWIPE_RIGHT) {
+        if (cardPosition.current.next === "CardA") {
+          setCardIndex((prev) => ({
+            ...prev,
+            cardA: getValidArrayIndex(swipeDirection, prev.cardB - 1),
+          }));
+        } else if (cardPosition.current.next === "CardB") {
+          setCardIndex((prev) => ({
+            ...prev,
+            cardB: getValidArrayIndex(swipeDirection, prev.cardC - 1),
+          }));
+        } else if (cardPosition.current.next === "CardC") {
+          setCardIndex((prev) => ({
+            ...prev,
+            cardC: getValidArrayIndex(swipeDirection, prev.cardA - 1),
+          }));
+        }
 
-    runOnJS(onSwipeHandler)(value);
-  };
+        cardPosition.current = {
+          previous: cardPosition.current.next,
+          current: cardPosition.current.previous,
+          next: cardPosition.current.current,
+        };
+      }
+    },
+    [cardPosition, setCardIndex, getValidArrayIndex]
+  );
 
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .onUpdate((e) => {
-          cardAPosition.value = cardAPanOffset.value + e.translationX;
-          cardBPosition.value = cardBPanOffset.value + e.translationX;
-          cardCPosition.value = cardCPanOffset.value + e.translationX;
-        })
-        /**
-         * to persist the previous scroll position
-         */
-        .onEnd((e) => {
-          if (Math.abs(e.translationX) >= width / 4) {
-            if (e.translationX < 0) {
-              if (cardBPanOffset.value <= -width) {
-                cardBPanOffset.value = width;
-              } else {
-                cardBPosition.value = withTiming(cardBPanOffset.value - width, {
-                  duration: 100,
-                });
-                cardBPanOffset.value -= width;
-              }
+  const changeCards = useCallback(
+    (value: typeof SWIPE_LEFT | typeof SWIPE_RIGHT) => {
+      "worklet";
 
-              if (cardCPanOffset.value <= -width) {
-                cardCPanOffset.value = width;
-              } else {
-                cardCPosition.value = withTiming(cardCPanOffset.value - width, {
-                  duration: 100,
-                });
-                cardCPanOffset.value -= width;
-              }
+      runOnJS(onSwipeHandler)(value);
+    },
+    [onSwipeHandler]
+  );
 
-              if (cardAPanOffset.value <= -width) {
-                cardAPanOffset.value = width;
-              } else {
-                cardAPosition.value = withTiming(cardAPanOffset.value - width, {
-                  duration: 100,
-                });
-                cardAPanOffset.value -= width;
-              }
-            }
-            if (e.translationX > 0) {
-              if (cardBPanOffset.value >= width) {
-                cardBPanOffset.value = -width;
-              } else {
-                cardBPosition.value = withTiming(cardBPanOffset.value + width, {
-                  duration: 100,
-                });
-                cardBPanOffset.value += width;
-              }
+  const onUpdateGesture = useCallback(
+    (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
+      "worklet";
 
-              if (cardAPanOffset.value >= width) {
-                cardAPanOffset.value = -width;
-              } else {
-                cardAPosition.value = withTiming(cardAPanOffset.value + width, {
-                  duration: 100,
-                });
-                cardAPanOffset.value += width;
-              }
+      cardAPosition.value = cardAPanOffset.value + e.translationX;
+      cardBPosition.value = cardBPanOffset.value + e.translationX;
+      cardCPosition.value = cardCPanOffset.value + e.translationX;
+    },
+    [
+      cardAPanOffset.value,
+      cardAPosition,
+      cardBPanOffset.value,
+      cardBPosition,
+      cardCPanOffset.value,
+      cardCPosition,
+    ]
+  );
 
-              if (cardCPanOffset.value >= width) {
-                cardCPanOffset.value = -width;
-              } else {
-                cardCPosition.value = withTiming(cardCPanOffset.value + width, {
-                  duration: 100,
-                });
-                cardCPanOffset.value += width;
-              }
-            }
+  const onEndGesture = useCallback(
+    (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
+      "worklet";
+
+      if (Math.abs(e.translationX) >= width / 4) {
+        if (e.translationX < 0) {
+          if (cardBPanOffset.value <= -width) {
+            cardBPanOffset.value = width;
           } else {
-            cardBPosition.value = withTiming(cardBPanOffset.value, {
+            cardBPosition.value = withTiming(cardBPanOffset.value - width, {
               duration: 100,
             });
-
-            cardCPosition.value = withTiming(cardCPanOffset.value, {
-              duration: 100,
-            });
-
-            cardAPosition.value = withTiming(cardAPanOffset.value, {
-              duration: 100,
-            });
+            cardBPanOffset.value -= width;
           }
-        })
-        .onFinalize((e) => {
-          if (Math.abs(e.translationX) >= width / 3) {
-            if (e.translationX < 0) {
-              changeCards("SWIPE_LEFT");
-            }
-            if (e.translationX > 0) {
-              changeCards("SWIPE_RIGHT");
-            }
+
+          if (cardCPanOffset.value <= -width) {
+            cardCPanOffset.value = width;
+          } else {
+            cardCPosition.value = withTiming(cardCPanOffset.value - width, {
+              duration: 100,
+            });
+            cardCPanOffset.value -= width;
           }
-        }),
+
+          if (cardAPanOffset.value <= -width) {
+            cardAPanOffset.value = width;
+          } else {
+            cardAPosition.value = withTiming(cardAPanOffset.value - width, {
+              duration: 100,
+            });
+            cardAPanOffset.value -= width;
+          }
+        }
+        if (e.translationX > 0) {
+          if (cardBPanOffset.value >= width) {
+            cardBPanOffset.value = -width;
+          } else {
+            cardBPosition.value = withTiming(cardBPanOffset.value + width, {
+              duration: 100,
+            });
+            cardBPanOffset.value += width;
+          }
+
+          if (cardAPanOffset.value >= width) {
+            cardAPanOffset.value = -width;
+          } else {
+            cardAPosition.value = withTiming(cardAPanOffset.value + width, {
+              duration: 100,
+            });
+            cardAPanOffset.value += width;
+          }
+
+          if (cardCPanOffset.value >= width) {
+            cardCPanOffset.value = -width;
+          } else {
+            cardCPosition.value = withTiming(cardCPanOffset.value + width, {
+              duration: 100,
+            });
+            cardCPanOffset.value += width;
+          }
+        }
+      } else {
+        cardBPosition.value = withTiming(cardBPanOffset.value, {
+          duration: 100,
+        });
+
+        cardCPosition.value = withTiming(cardCPanOffset.value, {
+          duration: 100,
+        });
+
+        cardAPosition.value = withTiming(cardAPanOffset.value, {
+          duration: 100,
+        });
+      }
+    },
     [
       cardAPanOffset,
       cardAPosition,
@@ -255,8 +274,32 @@ const CircularTabs = ({ children }: CircularTabsInterface) => {
       cardBPosition,
       cardCPanOffset,
       cardCPosition,
-      changeCards,
     ]
+  );
+
+  const onFinalizeGesture = useCallback(
+    (e: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
+      "worklet";
+
+      if (Math.abs(e.translationX) >= width / 3) {
+        if (e.translationX < 0) {
+          changeCards("SWIPE_LEFT");
+        }
+        if (e.translationX > 0) {
+          changeCards("SWIPE_RIGHT");
+        }
+      }
+    },
+    [changeCards]
+  );
+
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .onUpdate(onUpdateGesture)
+        .onEnd(onEndGesture)
+        .onFinalize(onFinalizeGesture),
+    [onEndGesture, onFinalizeGesture, onUpdateGesture]
   );
 
   const cardAStyle = useAnimatedStyle(() => ({
